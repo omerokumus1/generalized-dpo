@@ -1,4 +1,5 @@
 import pprint
+import time
 
 import torch
 from torch.utils.data import DataLoader
@@ -142,6 +143,7 @@ print("\n\nCh4. Implementing the DPO Loss Function")
 # * Ch5. Training the Model
 print("\n\nCh5. Training the Model")
 print("\t-> Initial losses and rewards:")
+start_time = time.time()
 res = evaluate_dpo_loss_loader(
     policy_model=policy_model,
     reference_model=reference_model,
@@ -150,11 +152,15 @@ res = evaluate_dpo_loss_loader(
     beta=0.1,
     eval_iter=5
 )
+end_time = time.time()
 
 print("\t\tTraining loss:", res["train_loss"])
 print("\t\tValidation loss:", res["val_loss"])
 print("\t\tTrain reward margin:", res["train_chosen_reward"] - res["train_rejected_reward"])
 print("\t\tVal reward margin:", res["val_chosen_reward"] - res["val_rejected_reward"])
+execution_time_minutes = (end_time - start_time) / 60
+print(f"Training completed in {execution_time_minutes:.2f} minutes.")
+
 
 print("\n\tFirst 3 of initial model's responses on validation_data:")
 print_model_responses(policy_model, reference_model, val_data, tokenizer)
