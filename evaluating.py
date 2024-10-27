@@ -14,7 +14,7 @@ def print_model_responses(policy_model, reference_model, data, tokenizer, respon
             idx=text_to_token_ids(input_text, tokenizer).to(Args.device),
             max_new_tokens=256,
             context_size=Args.max_context_length,
-            eos_id=50256
+            eos_id=Args.pad_token_id
         )
         generated_text = token_ids_to_text(token_ids, tokenizer)
         reference_response_text = (
@@ -28,7 +28,7 @@ def print_model_responses(policy_model, reference_model, data, tokenizer, respon
             idx=utils.text_to_token_ids(input_text, tokenizer).to(Args.device),
             max_new_tokens=256,
             context_size=Args.max_context_length,
-            eos_id=50256
+            eos_id=Args.pad_token_id
         )
         generated_text = token_ids_to_text(token_ids, tokenizer)
         policy_response_text = (
