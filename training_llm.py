@@ -6,11 +6,12 @@ from args import Args
 from dpo_loss import compute_dpo_loss_batch, evaluate_dpo_loss_loader
 from prepare_dataset import format_input
 from utils import generate_and_print_sample
+from torch.optim import Optimizer
 
 
 def train_model_dpo_simple(
         policy_model, reference_model, train_loader, val_loader,
-        optimizer, num_epochs, beta,
+        optimizer: Optimizer, num_epochs, beta,
         eval_freq, eval_iter, start_context, tokenizer
 ):
     # Initialize lists to track losses and tokens seen
@@ -39,13 +40,9 @@ def train_model_dpo_simple(
                 reference_model=reference_model,
                 beta=beta
             )
-
-            try:
-                loss.backward()  # Calculate loss gradients
-                optimizer.step()  # Update model weights using loss gradients
-
-            except RuntimeError as e:
-                print(e)  # Print the error message
+            loss = torch.tensor(loss.item(), device=loss.device, requires_grad=True).mean()
+            loss.backward()  # Calculate loss gradients
+            optimizer.step()  # Update model weights using loss gradients
 
             tokens_seen += batch["chosen"].numel()
             global_step += 1
