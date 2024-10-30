@@ -89,7 +89,7 @@ print(customized_collate_fn)
 
 # * Ch3. Loading a Finetuned LLM for DPO Alignment
 print("\n\nCh3. Loading a Finetuned LLM for DPO Alignment")
-model, tokenizer = load_llm(LLM.unsloth_llama_3_8b_bnb_4bit)
+model, tokenizer = load_llm(Args.LLM)
 
 print("\n-> Model Test")
 model.eval()
@@ -98,7 +98,7 @@ if Args.DEBUG:
 
 print("\n -> Loading policy_model and reference_model..")
 policy_model = model
-reference_model, _ = load_llm(LLM.unsloth_llama_3_8b_bnb_4bit)
+reference_model, _ = load_llm(Args.LLM)
 reference_model.eval()
 
 # ? 2.4. Creating training, validation, and test set data loaders

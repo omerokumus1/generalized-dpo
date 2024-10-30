@@ -1,11 +1,12 @@
 import torch
-from pathlib import Path
+from load_llm import LLM
 
 
 class Args:
     DEBUG = True
     file_path: str = "data/generalized_dpo_data.json"
     finetuned_model_path = "gpt2-medium355M-sft.pth"
+    LLM = LLM.unsloth_llama_3_1b_bnb_4bit
 
     train_percent: float = 0.85
     test_percent: float = 0.1
