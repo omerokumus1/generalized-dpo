@@ -13,7 +13,7 @@ class Args:
     sub_data_size: int = 1000
     use_sub_data = True
 
-    pad_token_id = 50256
+    pad_token_id = 128001
 
     max_seq_length: int = 1024
     max_context_length: int = 1024
