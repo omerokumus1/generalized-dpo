@@ -207,7 +207,7 @@ def test_customized_collate_fn(collate_fn: partial, data: List[EntryDict], token
 
 def decode_tokens_from_batch(token_ids, tokenizer) -> str:
     ids_in_python_list = token_ids.flatten().tolist()
-    return tokenizer.decode(ids_in_python_list)
+    return tokenizer.decode(ids_in_python_list, skip_special_tokens=True)
 
 
 def token_ids_to_text(token_ids, tokenizer):
