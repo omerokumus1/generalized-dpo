@@ -253,10 +253,7 @@ def generate(model, idx, max_new_tokens, context_size, temperature=0.0, top_k=No
         idx_cond = idx[:, -context_size:]
         with torch.no_grad():
             logits = model(idx_cond)
-        if len(logits) > 1:
-            logits = logits[0][:, -1, :]
-        else:
-            logits = logits[:, -1, :]
+        logits = logits[0][:, -1, :]
 
         # New: Filter logits with top_k sampling
         if top_k is not None:
