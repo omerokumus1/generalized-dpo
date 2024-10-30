@@ -1,14 +1,7 @@
-import tiktoken
-from torch.utils.data import DataLoader
 from unsloth import FastLanguageModel
 
 from args import Args
-from enum import Enum
-
-
-class LLM(Enum):
-    unsloth_llama_3_8b_bnb_4bit = "unsloth/llama-3-8b-bnb-4bit"
-    unsloth_llama_3_1b_bnb_4bit = "unsloth/Llama-3.2-1B-Instruct-bnb-4bit"
+from supported_llms import LLM
 
 
 def load_llm(llm_name: LLM):

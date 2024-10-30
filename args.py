@@ -1,5 +1,5 @@
 import torch
-from load_llm import LLM
+from supported_llms import LLM
 
 
 class Args:
