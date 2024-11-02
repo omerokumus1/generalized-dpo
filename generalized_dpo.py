@@ -10,7 +10,7 @@ from args import Args
 from batch_processing import get_customized_collate_fn
 from dpo_loss import evaluate_dpo_loss_loader
 from evaluating import print_model_responses
-from load_llm import load_llm, LLM
+from load_llm import load_llm
 from prepare_dataset import read_data, format_input, get_sub_data, get_train_test_validation_data, print_data_lengths
 from test_util import test_model, test_data_loader
 from training_llm import start_training

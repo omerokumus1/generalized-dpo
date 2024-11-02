@@ -90,18 +90,17 @@ def train_model_dpo_simple(
 def start_training(policy_model, reference_model, train_loader, val_loader, val_data, tokenizer):
     start_time = time.time()
 
-    torch.manual_seed(123)
+    torch.manual_seed(Args.torch_seed)
 
     optimizer = torch.optim.AdamW(policy_model.parameters(), lr=5e-6, weight_decay=0.01)
 
-    num_epochs = Args.num_epochs
     tracking = train_model_dpo_simple(
         policy_model=policy_model,
         reference_model=reference_model,
         train_loader=train_loader,
         val_loader=val_loader,
         optimizer=optimizer,
-        num_epochs=num_epochs,
+        num_epochs=Args.num_epochs,
         beta=0.1,  # value between 0.1 and 0.5
         eval_freq=5,
         eval_iter=5,
