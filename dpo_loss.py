@@ -1,5 +1,8 @@
+from typing import List
+
 import torch
 import torch.nn.functional as F
+from torch import Tensor
 
 
 # This function calculates logarithms, and you need to pass the combined
@@ -40,7 +43,7 @@ def compute_dpo_loss(
     return losses.mean(), chosen_rewards.mean(), rejected_rewards.mean()
 
 
-def compute_logprobs(logits, labels, selection_mask=None):
+def compute_logprobs(logits, labels, selection_mask=None) -> Tensor:
     """
     Compute log probabilities.
 
@@ -87,7 +90,7 @@ def compute_logprobs(logits, labels, selection_mask=None):
 
 
 def get_max_of_rejected_logprobs(model, batch):
-    rejected_log_probas_list = []
+    rejected_log_probas_list: List[Tensor] = []
     for i in range(len(batch["rejecteds"])):
         rejected_log_probas_list.append(
             compute_logprobs(
@@ -115,23 +118,20 @@ def get_log_probs(model, batch):
         batch=batch
     )
 
-    return (chosen_log_probas, rejected_log_probas)
+    return chosen_log_probas, rejected_log_probas
 
 
 def compute_dpo_loss_batch(batch, policy_model, reference_model, beta):
     """Compute the DPO loss on an input batch"""
-    ### Policy model logprobs
+    # Policy model logprobs
     # where policy_model(batch["chosen"]) are the logits
 
-    # TODO+: add other policy model's rejecteds here, do not forget to pass corresponding masks
     policy_chosen_log_probas, policy_rejected_log_probas = get_log_probs(
         model=policy_model,
         batch=batch
     )
 
-    ### Reference model logrporbs
-
-    # TODO+: add other reference model's rejecteds here, do not forget to pass corresponding masks
+    # Reference model logrporbs
     ref_chosen_log_probas, ref_rejected_log_probas = get_log_probs(
         model=reference_model,
         batch=batch
