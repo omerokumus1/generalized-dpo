@@ -17,20 +17,17 @@ class PreferenceDataset(Dataset):
         self.encoded_texts = []
         for entry in data:
             prompt = format_input(entry)
-            # +TODO add other rejected answers here as a list
             rejected_responses = entry["rejecteds"]
             chosen_response = entry["chosen"]
 
             prompt_tokens = tokenizer.encode(prompt)
             chosen_full_text = f"{prompt}\n\n### Response:\n{chosen_response}"
 
-            # +TODO adjust according to rejected_response
             rejected_full_text_list = [
                 f"{prompt}\n\n### Response:\n{rejected_response}" for rejected_response in rejected_responses
             ]
             chosen_full_tokens = tokenizer.encode(chosen_full_text)
 
-            # +TODO adjust according to rejected_full_text
             rejected_full_tokens_list = [
                 tokenizer.encode(rejected_full_text) for rejected_full_text in rejected_full_text_list
             ]
@@ -38,7 +35,7 @@ class PreferenceDataset(Dataset):
             self.encoded_texts.append({
                 "prompt": prompt_tokens,
                 "chosen": chosen_full_tokens,
-                "rejecteds": rejected_full_tokens_list,  # +TODO adjust according to rejected_full_tokens
+                "rejecteds": rejected_full_tokens_list,
             })
 
     def __getitem__(self, index: int):

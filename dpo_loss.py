@@ -8,8 +8,8 @@ from torch import Tensor
 # This function calculates logarithms, and you need to pass the combined
 # scores of rejected answers.
 def compute_dpo_loss(
-        model_chosen_logprobs,
-        model_rejected_logprobs,
+        policy_chosen_logprobs,
+        policy_rejected_logprobs,
         reference_chosen_logprobs,
         reference_rejected_logprobs,
         beta=0.1,
@@ -28,7 +28,7 @@ def compute_dpo_loss(
         A tuple of three tensors: (loss, chosen_rewards, rejected_rewards).
     """
 
-    model_logratios = model_chosen_logprobs - model_rejected_logprobs
+    model_logratios = policy_chosen_logprobs - policy_rejected_logprobs
     reference_logratios = reference_chosen_logprobs - reference_rejected_logprobs
     logits = model_logratios - reference_logratios
 
@@ -36,8 +36,8 @@ def compute_dpo_loss(
     losses = -F.logsigmoid(beta * logits)
 
     # Optional values to track progress during training
-    chosen_rewards = (model_chosen_logprobs - reference_chosen_logprobs).detach()
-    rejected_rewards = (model_rejected_logprobs - reference_rejected_logprobs).detach()
+    chosen_rewards = (policy_chosen_logprobs - reference_chosen_logprobs).detach()
+    rejected_rewards = (policy_rejected_logprobs - reference_rejected_logprobs).detach()
 
     # .mean() to average over the samples in the batch
     return losses.mean(), chosen_rewards.mean(), rejected_rewards.mean()
@@ -89,7 +89,7 @@ def compute_logprobs(logits, labels, selection_mask=None) -> Tensor:
         return selected_log_probs.mean(-1)
 
 
-def get_max_of_rejected_logprobs(model, batch):
+def get_max_of_rejected_logprobs(model, batch: ProcessedBatch):
     rejected_log_probas_list: List[Tensor] = []
     for i in range(len(batch["rejecteds"])):
         rejected_log_probas_list.append(
@@ -106,7 +106,7 @@ def get_max_of_rejected_logprobs(model, batch):
     return torch.tensor(rejected_log_probas_list, device='cuda:0')
 
 
-def get_log_probs(model, batch):
+def get_log_probs(model, batch: ProcessedBatch):
     chosen_log_probas = compute_logprobs(
         logits=model(batch["chosen"])[0],
         labels=batch["chosen"],
@@ -121,7 +121,7 @@ def get_log_probs(model, batch):
     return chosen_log_probas, rejected_log_probas
 
 
-def compute_dpo_loss_batch(batch, policy_model, reference_model, beta):
+def compute_dpo_loss_batch(batch: ProcessedBatch, policy_model, reference_model, beta):
     """Compute the DPO loss on an input batch"""
     # Policy model logprobs
     # where policy_model(batch["chosen"]) are the logits
@@ -138,12 +138,13 @@ def compute_dpo_loss_batch(batch, policy_model, reference_model, beta):
     )
 
     loss, chosen_rewards, rejected_rewards = compute_dpo_loss(
-        model_chosen_logprobs=policy_chosen_log_probas,
-        model_rejected_logprobs=policy_rejected_log_probas,
+        policy_chosen_logprobs=policy_chosen_log_probas,
+        policy_rejected_logprobs=policy_rejected_log_probas,
         reference_chosen_logprobs=ref_chosen_log_probas,
         reference_rejected_logprobs=ref_rejected_log_probas,
         beta=beta
     )
+
     return loss, chosen_rewards, rejected_rewards
 
 

@@ -17,6 +17,8 @@ import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 from importlib.metadata import version
 
+from custom_types import ProcessedBatch
+
 
 #####################################
 # Chapter 2
@@ -478,3 +480,44 @@ def library_versions():
     ]
     for p in pkgs:
         print(f"{p} version: {version(p)}")
+
+
+def processed_batch_eq(self: ProcessedBatch, other: ProcessedBatch):
+    prompt_eq = all([torch.equal(self["prompt"][i], other["prompt"][i]) for i in range(len(self["prompt"]))])
+    chosen_eq = all([torch.equal(self["chosen"][i], other["chosen"][i]) for i in range(len(self["chosen"]))])
+    rejecteds_eq = all([all([torch.equal(self["rejecteds"][i][j], other["rejecteds"][i][j]) for j in
+                             range(len(self["rejecteds"][i]))]) for i in range(len(self["rejecteds"]))])
+    rejecteds_mask_eq = all([all([torch.equal(self["rejecteds_mask"][i][j], other["rejecteds_mask"][i][j]) for j in
+                                  range(len(self["rejecteds_mask"][i]))]) for i in
+                             range(len(self["rejecteds_mask"]))])
+    chosen_mask_eq = all(
+        [torch.equal(self["chosen_mask"][i], other["chosen_mask"][i]) for i in range(len(self["chosen_mask"]))])
+
+    if not prompt_eq:
+        print("Prompt not equal")
+        print("self['prompt']:", self["prompt"])
+        print('other["prompt"]:', other["prompt"])
+    if not chosen_eq:
+        print("Chosen not equal")
+        print('self["chosen"]:', self["chosen"])
+        print('other["chosen"]:', other["chosen"])
+    if not rejecteds_eq:
+        print("Rejecteds not equal")
+        print('self["rejecteds"]:', self["rejecteds"])
+        print('other["rejecteds"]:', other["rejecteds"])
+    if not rejecteds_mask_eq:
+        print("Rejecteds Mask not equal")
+        print('self["rejecteds_mask"]:', self["rejecteds_mask"])
+        print('other["rejecteds_mask"]:', other["rejecteds_mask"])
+
+    return prompt_eq and chosen_eq and rejecteds_eq and rejecteds_mask_eq and chosen_mask_eq
+
+
+def processed_batch_clone(self: ProcessedBatch):
+    return {
+        "prompt": [t.clone() for t in self["prompt"]],
+        "chosen": [t.clone() for t in self["chosen"]],
+        "rejecteds": [[t.clone() for t in l] for l in self["rejecteds"]],
+        "rejecteds_mask": [[t.clone() for t in l] for l in self["rejecteds_mask"]],
+        "chosen_mask": [t.clone() for t in self["chosen_mask"]]
+    }

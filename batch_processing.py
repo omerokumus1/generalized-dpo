@@ -28,7 +28,6 @@ def get_max_chosen_length(batch: List[BatchEntry]) -> int:
 def get_max_length_common(batch: List[BatchEntry]) -> int:
     max_length_common = 0
     if batch:
-        # +TODO fix this loop according to rejected key
         rejecteds_max = get_max_rejecteds_length(batch)
         chosen_max = get_max_chosen_length(batch)
         max_length_common = max(rejecteds_max, chosen_max, max_length_common)
@@ -127,14 +126,14 @@ def custom_collate_fn(
         pad_token_id=Args.pad_token_id,
         allowed_max_length=None,
         mask_prompt_tokens=True,
-        device="cpu"
+        device=Args.device
 ) -> ProcessedBatch:
     # Initialize lists to hold batch data
     processed_batch: ProcessedBatch = {
         "prompt": [],
         "chosen": [],
-        "rejecteds": [],  # +TODO make this list of list
-        "rejecteds_mask": [],  # +TODO make this list of list
+        "rejecteds": [],
+        "rejecteds_mask": [],
         "chosen_mask": []
     }
 
@@ -142,7 +141,6 @@ def custom_collate_fn(
 
     max_length_common = 0
     if batch:
-        # +TODO fix this loop according to rejected key
         max_length_common = get_max_length_common(batch)
 
     # Process each item in the batch
@@ -156,8 +154,8 @@ def custom_collate_fn(
                                       processed_batch)
 
     # Final processing
-    processed_batch = final_padding_processing_for_chosen(processed_batch, allowed_max_length)
-    processed_batch = final_padding_processing_for_rejecteds(processed_batch, allowed_max_length)
+    processed_batch = final_padding_processing_for_chosen(processed_batch, allowed_max_length, device)
+    processed_batch = final_padding_processing_for_rejecteds(processed_batch, allowed_max_length, device)
 
     return processed_batch
 
