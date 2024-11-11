@@ -86,8 +86,7 @@ def process_padding_for_rejecteds(batch_entry: BatchEntry, prompt: Tensor, pad_t
 
 
 def final_padding_processing_for_chosen(processed_batch: ProcessedBatch,
-                                        allowed_max_length: Optional[int],
-                                        device: str = Args.device) -> ProcessedBatch:
+                                        allowed_max_length: Optional[int]):
     for key in ["chosen", "chosen_mask"]:
         # Stack all sequences into a tensor for the given key
         tensor_stack = torch.stack(processed_batch[key])  # type: ignore
@@ -97,14 +96,11 @@ def final_padding_processing_for_chosen(processed_batch: ProcessedBatch,
             tensor_stack = tensor_stack[:, :allowed_max_length]
 
         # Move to the specified device
-        processed_batch[key] = tensor_stack.to(device)  # type: ignore
-
-    return processed_batch
+        processed_batch[key] = tensor_stack.to(Args.device)  # type: ignore
 
 
 def final_padding_processing_for_rejecteds(processed_batch: ProcessedBatch,
-                                           allowed_max_length: Optional[int],
-                                           device: str = Args.device) -> ProcessedBatch:
+                                           allowed_max_length: Optional[int]):
     for key in ["rejecteds", "rejecteds_mask"]:
         outer_list = processed_batch[key]  # type: ignore
         for i in range(len(outer_list)):
@@ -116,9 +112,7 @@ def final_padding_processing_for_rejecteds(processed_batch: ProcessedBatch,
                 tensor_stack = tensor_stack[:, :allowed_max_length]
 
             # Move to the specified device
-            outer_list[i] = tensor_stack.to(device)
-
-    return processed_batch
+            outer_list[i] = tensor_stack.to(Args.device)
 
 
 def custom_collate_fn(
@@ -126,7 +120,6 @@ def custom_collate_fn(
         pad_token_id=Args.pad_token_id,
         allowed_max_length=None,
         mask_prompt_tokens=True,
-        device=Args.device
 ) -> ProcessedBatch:
     # Initialize lists to hold batch data
     processed_batch: ProcessedBatch = {
@@ -154,8 +147,8 @@ def custom_collate_fn(
                                       processed_batch)
 
     # Final processing
-    processed_batch = final_padding_processing_for_chosen(processed_batch, allowed_max_length, device)
-    processed_batch = final_padding_processing_for_rejecteds(processed_batch, allowed_max_length, device)
+    final_padding_processing_for_chosen(processed_batch, allowed_max_length)
+    final_padding_processing_for_rejecteds(processed_batch, allowed_max_length)
 
     return processed_batch
 
@@ -163,7 +156,6 @@ def custom_collate_fn(
 def get_customized_collate_fn() -> partial:
     customized_collate_fn = partial(
         custom_collate_fn,
-        device=Args.device,  # Put the data directly on a GPU if available
         mask_prompt_tokens=Args.mask_prompt_tokens,  # This is optional
         allowed_max_length=Args.max_context_length  # The supported context length of the model
     )
