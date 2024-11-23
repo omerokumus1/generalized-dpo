@@ -13,11 +13,11 @@ class EntryDict(TypedDict):
 
 
 class ProcessedBatch(TypedDict):
-    prompt: List[Tensor]
-    chosen: List[Tensor]
-    rejecteds: List[List[Tensor]]
-    rejecteds_mask: List[List[Tensor]]
-    chosen_mask: List[Tensor]
+    prompt: List[Tensor]  # List of tensor
+    chosen: List[Tensor]  # Finally becomes Tensor with shape (batch_size, max_length)
+    rejecteds: List[List[Tensor]]  # Finally becomes Tensor with shape (batch_size, num_rejecteds, max_length)
+    rejecteds_mask: List[List[Tensor]]  # Finally becomes Tensor with shape (batch_size, num_rejecteds, max_length)
+    chosen_mask: List[Tensor]  # Finally becomes Tensor with shape (batch_size, max_length)
 
 
 class BatchEntry(TypedDict):

@@ -1,9 +1,8 @@
 import time
-
 import torch
-
 from args import Args
-from dpo_loss import compute_dpo_loss_batch, evaluate_dpo_loss_loader
+from custom_types import ProcessedBatch
+from dpo_loss import compute_dpo_loss_batch, evaluate_dpo_loss_loader, dummy_loss_function
 from prepare_dataset import format_input
 from utils import generate_and_print_sample
 from torch.optim import Optimizer
@@ -31,7 +30,7 @@ def train_model_dpo_simple(
         policy_model.train()  # Set model to training mode
         loss = None
         for batch_idx, batch in enumerate(train_loader):
-
+            batch: ProcessedBatch = batch
             optimizer.zero_grad()  # Reset loss gradients from previous batch iteration
 
             loss, chosen_rewards, rejected_rewards = compute_dpo_loss_batch(
@@ -40,7 +39,7 @@ def train_model_dpo_simple(
                 reference_model=reference_model,
                 beta=beta
             )
-            loss = torch.tensor(loss.item(), device=loss.device, requires_grad=True).mean()
+
             loss.backward()  # Calculate loss gradients
             optimizer.step()  # Update model weights using loss gradients
 

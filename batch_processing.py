@@ -43,7 +43,8 @@ def process_padding_for_chosen(batch_entry: BatchEntry, prompt: Tensor, pad_toke
 
     # Adjust padding according to the common maximum length
     chosen = batch_entry[key]
-    padded = chosen + [pad_token_id] * (max_length_common - len(chosen))
+    pad_length = max_length_common - len(chosen)
+    padded = chosen + [pad_token_id] * pad_length
     mask = torch.ones(len(padded)).bool()
 
     # Set mask for all padding tokens to False
@@ -67,7 +68,8 @@ def process_padding_for_rejecteds(batch_entry: BatchEntry, prompt: Tensor, pad_t
     padded_rejecteds_mask = []
     for rejected in batch_entry[key]:
         # Adjust padding according to the common maximum length
-        padded = rejected + [pad_token_id] * (max_length_common - len(rejected))
+        pad_length = max_length_common - len(rejected)
+        padded = rejected + [pad_token_id] * pad_length
         mask = torch.ones(len(padded)).bool()
 
         # Set mask for all padding tokens to False
@@ -102,6 +104,7 @@ def final_padding_processing_for_chosen(processed_batch: ProcessedBatch,
 def final_padding_processing_for_rejecteds(processed_batch: ProcessedBatch,
                                            allowed_max_length: Optional[int]):
     for key in ["rejecteds", "rejecteds_mask"]:
+        # outer_list is  List[List[Tensor]]
         outer_list = processed_batch[key]  # type: ignore
         for i in range(len(outer_list)):
             # Stack all sequences into a tensor for the given key
@@ -112,6 +115,7 @@ def final_padding_processing_for_rejecteds(processed_batch: ProcessedBatch,
                 tensor_stack = tensor_stack[:, :allowed_max_length]
 
             # Move to the specified device
+            # outer_list becomes Tensor with shape (num_rejecteds, max_length)
             outer_list[i] = tensor_stack.to(Args.device)
 
 

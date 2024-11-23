@@ -4,7 +4,7 @@ from supported_llms import LLM
 
 class Args:
     DEBUG = True
-    file_path: str = "data/generalized_dpo_data.json"
+    data_file_path: str = "data/generalized_dpo_data.json"
     finetuned_model_path = "gpt2-medium355M-sft.pth"
     LLM = LLM.unsloth_llama_3_1b_bnb_4bit
 

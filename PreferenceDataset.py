@@ -7,7 +7,7 @@ from custom_types import EntryDict
 
 
 class PreferenceDataset(Dataset):
-    def __init__(self, data: List[EntryDict], tokenizer: Encoding, format_input: Callable[[EntryDict], str]):
+    def __init__(self, data: List[EntryDict], tokenizer, format_input: Callable[[EntryDict], str]):
         """
         data is the dataset we provided with instruction, input, output, rejecteds, chosen keys
         """

@@ -51,7 +51,7 @@ Dataset format
 
 # ? 2.1. Loading a preference dataset
 print("\n\n# 2.1. Loading a preference dataset")
-data = read_data(Args.file_path)
+data = read_data(Args.data_file_path)
 print("\tNumber of entries:", len(data))
 
 if Args.use_sub_data:
