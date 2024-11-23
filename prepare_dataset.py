@@ -25,7 +25,7 @@ def get_sub_data(data: List[EntryDict],
 
 def format_input(entry: EntryDict) -> str:
     instruction_text = (
-        f"Aşağıda bir soru ve bu soru için doğru olabilecek şıklar A), B), C) şeklinde verilmiştir. "
+        f"Aşağıda bir soru ve bu soru için doğru olabilecek seçenekler A), B), C) şeklinde girdi olarak verilmiştir. "
         f"Verilen soruya göre doğru cevabı seç ve açıkla. "
         f"\n\n### Instruction:\n{entry['instruction']}"
     )
