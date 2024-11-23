@@ -7,9 +7,11 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 
 
 def load_llm(llm: LLM):
+    model = None
+    tokenizer = None
     if llm.value.startswith("unsloth/"):
         max_seq_length = Args.max_seq_length  # Choose any! We auto support RoPE Scaling internally!
-        dtype = None  # None for auto detection. Float16 for Tesla T4, V100, Bfloat16 for Ampere+
+        dtype = torch.float32  # None for auto detection. Float16 for Tesla T4, V100, Bfloat16 for Ampere+
         load_in_4bit = True  # Use 4bit quantization to reduce memory usage. Can be False.
         model, tokenizer = FastLanguageModel.from_pretrained(
             model_name=llm.value,
@@ -32,7 +34,7 @@ def load_llm(llm: LLM):
             use_rslora=False,  # We support rank stabilized LoRA
             loftq_config=None,  # And LoftQ
         )
-        return model, tokenizer
+        model.to(Args.device)
 
     elif llm == LLM.ytu_turkish_llama_8b_v01:
         bnb_config = BitsAndBytesConfig(
@@ -50,10 +52,8 @@ def load_llm(llm: LLM):
             quantization_config=bnb_config,
         )
 
-        return model, tokenizer
-
     else:
         tokenizer = AutoTokenizer.from_pretrained(llm.value)
         model = AutoModelForCausalLM.from_pretrained(llm.value)
-        model.to(Args.device)
-        return model, tokenizer
+
+    return model, tokenizer
