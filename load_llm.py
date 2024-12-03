@@ -11,7 +11,7 @@ def load_llm(llm: LLM):
     tokenizer = None
     if llm.value.startswith("unsloth/"):
         max_seq_length = Args.max_seq_length  # Choose any! We auto support RoPE Scaling internally!
-        dtype = torch.float32  # None for auto detection. Float16 for Tesla T4, V100, Bfloat16 for Ampere+
+        dtype = None  # None for auto detection. Float16 for Tesla T4, V100, Bfloat16 for Ampere+
         load_in_4bit = True  # Use 4bit quantization to reduce memory usage. Can be False.
         model, tokenizer = FastLanguageModel.from_pretrained(
             model_name=llm.value,
@@ -55,5 +55,6 @@ def load_llm(llm: LLM):
     else:
         tokenizer = AutoTokenizer.from_pretrained(llm.value)
         model = AutoModelForCausalLM.from_pretrained(llm.value)
+        model.to(Args.device)
 
     return model, tokenizer
