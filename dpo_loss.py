@@ -1,10 +1,25 @@
 from typing import List
-
 import torch
 import torch.nn.functional as F
 from torch import Tensor
 
+import utils
 from custom_types import ProcessedBatch
+import ipdb
+
+logits_min = -1e35
+logits_max = 1e35
+clamp_min = 1e-5
+clamp_max = 1e35
+
+
+def clamp(tensor: Tensor) -> Tensor:
+    return torch.clamp(tensor, min=clamp_min, max=clamp_max)
+
+
+def get_logits(model, input: Tensor) -> Tensor:
+    logits = model(input).logits
+    return torch.clamp(logits, min=logits_min, max=logits_max)
 
 
 # This function calculates logarithms, and you need to pass the combined
@@ -35,7 +50,8 @@ def compute_dpo_loss(
     logits = model_logratios - reference_logratios
 
     # DPO (Eq. 7 of https://arxiv.org/pdf/2305.18290.pdf)
-    losses = -F.logsigmoid(beta * logits)
+    # reference_model's logits can contain inf values
+    losses = clamp(-F.logsigmoid(beta * logits))
 
     # Optional values to track progress during training
     chosen_rewards = (policy_chosen_logprobs - reference_chosen_logprobs).detach()
@@ -62,9 +78,8 @@ def compute_logprobs(logits: Tensor, labels: Tensor, selection_mask: Tensor = No
     labels = labels[:, 1:].clone()
 
     # Truncate logits to match the labels num_tokens
-    logits = logits[:, :-1, :].clone()
-
-    log_probs = F.log_softmax(logits, dim=-1)
+    logits = logits[:, :-1, :]
+    log_probs = clamp(F.log_softmax(logits, dim=-1))
 
     # Gather the log probabilities for the actual labels
     # Here, torch.gather calculates the cross entropy
@@ -80,7 +95,6 @@ def compute_logprobs(logits: Tensor, labels: Tensor, selection_mask: Tensor = No
 
         # Apply the mask to filter out padding tokens
         selected_log_probs = selected_log_probs * mask
-        selected_log_probs = torch.clamp(selected_log_probs, min=-1e10, max=1e10)
 
         # Calculate the average log probability excluding padding tokens
         # This averages over the tokens, so the shape is (batch_size, num_tokens)
@@ -99,57 +113,30 @@ def get_max_of_rejected_logprobs(model, batch: ProcessedBatch, is_policy_model: 
         len(max_item_indices) = batch_size
     """
 
-    # Feed each tensor to the model and compute the log probs
+    # Put each tensor to the model and compute the log probs
     rejected_log_probas_list: List[Tensor] = []
     with torch.no_grad():
         for i in range(len(batch["rejecteds"])):
             rejected_log_probas_list.append(
                 compute_logprobs(
-                    logits=model(batch["rejecteds"][i]).logits,
+                    logits=get_logits(model, batch["rejecteds"][i]),
                     labels=batch["rejecteds"][i],
                     selection_mask=batch["rejecteds_mask"][i]
                 )
             )
 
-    # Get the index of the max log probability for each rejected response
-    max_item_indices: List[int] = []
-    for log_probas in rejected_log_probas_list:
-        max_item_indices.append(torch.argmax(log_probas).item())
-
     # Get the max of each rejected response
-    # max_item_indices has the same length as rejected_log_probas_list, which is batch_size
-    rejecteds = []
-    rejecteds_mask = []
-    for i, r, rm in zip(max_item_indices, batch["rejecteds"], batch["rejecteds_mask"]):
-        rejecteds.append(r[i])
-        rejecteds_mask.append(rm[i])
-
-    batch_rejecteds = torch.stack(rejecteds)
-    batch_rejecteds_mask = torch.stack(rejecteds_mask)
-
-    # Calculate the log probabilities of the max rejected responses for the batch
-    logits = model(batch_rejecteds).logits
-    if not is_policy_model:
-        logits.detach()
-    rejected_logprobs = compute_logprobs(
-        logits=logits,
-        labels=batch_rejecteds,
-        selection_mask=batch_rejecteds_mask
-    )
-
-    return rejected_logprobs
+    return torch.max(torch.stack(rejected_log_probas_list))
 
 
 def get_log_probs(model, batch: ProcessedBatch, is_policy_model: bool):
-    # model logprobs
-    # where model(batch["chosen"]).logits are the logits
-
+    """Compute the log probabilities of the chosen and rejected responses for a batch"""
     chosen_log_probas = None
     rejected_log_probas = None
     if is_policy_model:
         # print("get_log_probs is_policy_model")
         chosen_log_probas = compute_logprobs(
-            logits=model(batch["chosen"]).logits,
+            logits=get_logits(model, batch["chosen"]),
             labels=batch["chosen"],
             selection_mask=batch["chosen_mask"]
         )
@@ -162,7 +149,7 @@ def get_log_probs(model, batch: ProcessedBatch, is_policy_model: bool):
     else:
         with torch.no_grad():
             chosen_log_probas = compute_logprobs(
-                logits=model(batch["chosen"]).logits,
+                logits=get_logits(model, batch["chosen"]),
                 labels=batch["chosen"],
                 selection_mask=batch["chosen_mask"]
             )
@@ -273,8 +260,8 @@ def evaluate_dpo_loss_loader(policy_model, reference_model, train_loader, val_lo
 
 def dummy_loss_function(batch, policy_model):
     # Extract chosen and rejected tensors from the batch
-    chosen_logits = policy_model(batch['chosen']).logits  # Shape: (2, x, 128256)
-    # rejecteds_logits = policy_model(batch['rejecteds'][0][:2]).logits  # Shape: (3, x, 128256)
+    chosen_logits = get_logits(policy_model, batch["chosen"])  # Shape: (2, x, 128256)
+    # rejecteds_logits = get_logits(policy_model, batch['rejecteds'][0][:2])  # Shape: (3, x, 128256)
     # rejecteds_logits = chosen_logits.clone()
 
     # Compute a dummy loss: Mean Squared Error between chosen and rejected
