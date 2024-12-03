@@ -39,7 +39,6 @@ def train_model_dpo_simple(
                 reference_model=reference_model,
                 beta=beta
             )
-
             loss.backward()  # Calculate loss gradients
             optimizer.step()  # Update model weights using loss gradients
 
@@ -93,19 +92,20 @@ def start_training(policy_model, reference_model, train_loader, val_loader, val_
 
     optimizer = torch.optim.AdamW(policy_model.parameters(), lr=5e-6, weight_decay=0.01)
 
-    tracking = train_model_dpo_simple(
-        policy_model=policy_model,
-        reference_model=reference_model,
-        train_loader=train_loader,
-        val_loader=val_loader,
-        optimizer=optimizer,
-        num_epochs=Args.num_epochs,
-        beta=0.1,  # value between 0.1 and 0.5
-        eval_freq=5,
-        eval_iter=5,
-        start_context=format_input(val_data[2]),
-        tokenizer=tokenizer
-    )
+    with torch.amp.autocast('cuda', dtype=torch.bfloat16):
+        tracking = train_model_dpo_simple(
+            policy_model=policy_model,
+            reference_model=reference_model,
+            train_loader=train_loader,
+            val_loader=val_loader,
+            optimizer=optimizer,
+            num_epochs=Args.num_epochs,
+            beta=0.1,  # value between 0.1 and 0.5
+            eval_freq=5,
+            eval_iter=5,
+            start_context=format_input(val_data[2]),
+            tokenizer=tokenizer
+        )
 
     end_time = time.time()
     execution_time_minutes = (end_time - start_time) / 60
