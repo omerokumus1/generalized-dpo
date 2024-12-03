@@ -19,6 +19,7 @@ from importlib.metadata import version
 
 from custom_types import ProcessedBatch
 
+
 def generate_text_simple(model, idx, max_new_tokens, context_size):
     # idx is (B, T) array of indices in the current context
     for _ in range(max_new_tokens):
@@ -304,6 +305,9 @@ def check_inf_and_nan(tens):
 
     if not inf and not nan:
         print("Tensor does not contain inf or nan values.")
+        return False
+
+    return True
 
 
 def check_inf_and_nan_for_model(model):
@@ -311,3 +315,13 @@ def check_inf_and_nan_for_model(model):
         if param.grad is not None:
             if torch.isinf(param.grad).any() or torch.isnan(param.grad).any():
                 print(f"Gradient for {name} contains inf or NaN values.")
+
+
+def debug_forward_pass(model, input):
+    with torch.no_grad():
+        output = input
+        for name, layer in model.named_children():
+            output = layer(output).logits
+            if torch.isnan(output).any() or torch.isinf(output).any():
+                print(f"Layer {name} produced NaN values.")
+                break
