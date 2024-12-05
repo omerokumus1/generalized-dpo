@@ -7,19 +7,9 @@ import utils
 from custom_types import ProcessedBatch
 import ipdb
 
-logits_min = -1e35
-logits_max = 1e35
-clamp_min = 1e-5
-clamp_max = 1e35
-
-
-def clamp(tensor: Tensor) -> Tensor:
-    return torch.clamp(tensor, min=clamp_min, max=clamp_max)
-
-
 def get_logits(model, input: Tensor) -> Tensor:
     logits = model(input).logits
-    return torch.clamp(logits, min=logits_min, max=logits_max)
+    return logits
 
 
 # This function calculates logarithms, and you need to pass the combined
@@ -51,7 +41,7 @@ def compute_dpo_loss(
 
     # DPO (Eq. 7 of https://arxiv.org/pdf/2305.18290.pdf)
     # reference_model's logits can contain inf values
-    losses = clamp(-F.logsigmoid(beta * logits))
+    losses = -F.logsigmoid(beta * logits)
 
     # Optional values to track progress during training
     chosen_rewards = (policy_chosen_logprobs - reference_chosen_logprobs).detach()
@@ -79,7 +69,7 @@ def compute_logprobs(logits: Tensor, labels: Tensor, selection_mask: Tensor = No
 
     # Truncate logits to match the labels num_tokens
     logits = logits[:, :-1, :]
-    log_probs = clamp(F.log_softmax(logits, dim=-1))
+    log_probs = F.log_softmax(logits, dim=-1)
 
     # Gather the log probabilities for the actual labels
     # Here, torch.gather calculates the cross entropy
