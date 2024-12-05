@@ -33,7 +33,7 @@ print("\n\nCh2. Preparing a preference dataset for DPO")
 Dataset format
 [
     {
-        "instruction": "Aşağıda bir soru ve bu soru için doğru olabilecek şıklar A), B), C) şeklinde verilmiştir. Verilen soruya göre doğru cevabı seç ve açıkla.",
+        "instruction": "Aşağıda bir soru ve bu soru için doğru olabilecek seçenekler A), B), C) şeklinde verilmiştir. Seçenek formatı <HARF><SAĞ PARANTEZ><AÇIKLAMA> şeklindedir. Verilen soruya göre doğru cevabı seç ve açıkla.",
         "input": "Aşağıdaki cümlelerin hangisinde –de ekinin yazımında bir yanlışlık yapılmıştır?\n\nA) Sokakta kimsecikler yoktu.\nB) Caddede oturanlarda bu durumdan habersizdi.\nC) Okulun bahçesinde birkaç öğrenci kalmıştı.\nD) Sizleri de aramızda görmekten mutluluk duyarız.\n",
         "output": "Türkçe'de '-de' ekinin ayrı yazılması gerektiği durumlar vardır. 'B' seçeneğinde 'oturanlarda' kelimesi yanlış yazılmıştır; doğru yazımı 'oturanlar da' şeklindedir, çünkü '-de' eki burada ayrı yazılmalıdır.\nDoğru cevap B seçeneğidir.",
         "rejecteds": [
@@ -161,7 +161,6 @@ print("\t\tVal reward margin:", res["val_chosen_reward"] - res["val_rejected_rew
 execution_time_minutes = (end_time - start_time) / 60
 print(f"Training completed in {execution_time_minutes:.2f} minutes.")
 
-
 print("\n\tFirst 3 of initial model's responses on validation_data:")
 print_model_responses(policy_model, reference_model, val_data, tokenizer)
 
@@ -170,6 +169,13 @@ torch.cuda.empty_cache()
 
 print("\nStarting training...")
 tracking = start_training(policy_model, reference_model, train_loader, val_loader, val_data, tokenizer)
+# Print a sample text after each epoch
+utils.generate_and_print_sample(
+    model=policy_model,
+    tokenizer=tokenizer,
+    device=Args.device,
+    start_context=format_input(val_data[2])
+)
 
 # * Ch6. Evaluating the Model
 print("\n\nCh6. Evaluating the Model")
