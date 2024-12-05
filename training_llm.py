@@ -74,14 +74,6 @@ def train_model_dpo_simple(
                 if global_step >= 300:
                     break
 
-        # Print a sample text after each epoch
-        generate_and_print_sample(
-            model=policy_model,
-            tokenizer=tokenizer,
-            device=loss.device,
-            start_context=start_context
-        )
-
     return tracking
 
 
