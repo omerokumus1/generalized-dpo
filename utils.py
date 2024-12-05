@@ -17,6 +17,7 @@ import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 from importlib.metadata import version
 
+from args import Args
 from custom_types import ProcessedBatch
 
 
@@ -30,7 +31,7 @@ def generate_text_simple(model, idx, max_new_tokens, context_size):
 
         # Get the predictions
         with torch.no_grad():
-            logits = model(idx_cond)
+            logits = model(idx_cond).logits
 
         # Focus only on the last time step
         # (batch, n_token, vocab_size) becomes (batch, vocab_size)
@@ -130,7 +131,7 @@ def evaluate_model(model, train_loader, val_loader, device, eval_iter):
 
 def generate_and_print_sample(model, tokenizer, device, start_context):
     model.eval()
-    context_size = model.pos_emb.weight.shape[0]
+    context_size = Args.max_context_length
     encoded = text_to_token_ids(start_context, tokenizer).to(device)
     with torch.no_grad():
         token_ids = generate_text_simple(
@@ -138,7 +139,7 @@ def generate_and_print_sample(model, tokenizer, device, start_context):
             max_new_tokens=50, context_size=context_size
         )
         decoded_text = token_ids_to_text(token_ids, tokenizer)
-        print(decoded_text.replace("\n", " "))  # Compact print format
+        print(decoded_text)  # Compact print format
     model.train()
 
 
@@ -188,7 +189,7 @@ def plot_losses(epochs_seen, tokens_seen, train_losses, val_losses, train_loss_l
     ax1.set_xlabel("Epochs")
     ax1.set_ylabel("Loss")
     ax1.set_title(title)
-    ax1.legend(loc="auto")
+    ax1.legend(loc="best")
     ax1.xaxis.set_major_locator(MaxNLocator(integer=True))  # only show integer labels on x-axis
 
     # Create a second x-axis for tokens seen
