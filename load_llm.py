@@ -10,14 +10,11 @@ def load_llm(llm: LLM):
     model = None
     tokenizer = None
     if llm.value.startswith("unsloth/"):
-        max_seq_length = Args.max_seq_length  # Choose any! We auto support RoPE Scaling internally!
-        dtype = None  # None for auto detection. Float16 for Tesla T4, V100, Bfloat16 for Ampere+
-        load_in_4bit = True  # Use 4bit quantization to reduce memory usage. Can be False.
         model, tokenizer = FastLanguageModel.from_pretrained(
             model_name=llm.value,
-            max_seq_length=max_seq_length,
-            dtype=dtype,
-            load_in_4bit=load_in_4bit,
+            max_seq_length=Args.max_seq_length,  # Choose any! We auto support RoPE Scaling internally!
+            dtype=None,  # None for auto detection. Float16 for Tesla T4, V100, Bfloat16 for Ampere+
+            load_in_4bit=True,  # Use 4bit quantization to reduce memory usage. Can be False.
             # token = "hf_...", # use one if using gated models like meta-llama/Llama-2-7b-hf
         )
         model = FastLanguageModel.get_peft_model(
