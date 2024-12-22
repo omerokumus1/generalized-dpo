@@ -8,7 +8,7 @@ import utils
 from PreferenceDataset import PreferenceDataset
 from args import Args
 from batch_processing import get_customized_collate_fn
-from dpo_loss import evaluate_dpo_loss_loader
+from gdpo_loss import evaluate_gdpo_loss_loader
 from evaluating import print_model_responses
 from load_llm import load_llm
 from prepare_dataset import read_data, format_input, get_sub_data, get_train_test_validation_data, print_data_lengths
@@ -144,7 +144,7 @@ print("\n\nCh4. Implementing the DPO Loss Function")
 print("\n\nCh5. Training the Model")
 print("\t-> Initial losses and rewards:")
 start_time = time.time()
-res = evaluate_dpo_loss_loader(
+res = evaluate_gdpo_loss_loader(
     policy_model=policy_model,
     reference_model=reference_model,
     train_loader=train_loader,

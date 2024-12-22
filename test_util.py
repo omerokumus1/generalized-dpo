@@ -2,7 +2,7 @@ import torch
 
 from args import Args
 from batch_processing import decode_tokens_from_batch
-from dpo_loss import compute_dpo_loss_batch
+from gdpo_loss import compute_gdpo_loss_batch
 from utils import generate, token_ids_to_text
 
 
@@ -55,5 +55,5 @@ def test_data_loader(loader, tokenizer, loader_name: str):
 def test_compute_dpo_loss_batch(batch, policy_model, reference_model):
     print("\n\nCompute DPO Loss Batch Test")
     with torch.no_grad():
-        loss = compute_dpo_loss_batch(batch, policy_model, reference_model, beta=0.1)
+        loss = compute_gdpo_loss_batch(batch, policy_model, reference_model, beta=0.1)
     print(loss)

@@ -1,7 +1,35 @@
+from typing import List
 import torch
+import torch.nn.functional as F
+from torch import Tensor
 
+import utils
 from custom_types import ProcessedBatch
+import ipdb
 from loss_commons import compute_dpo_loss, compute_logprobs
+
+
+def get_max_of_rejected_logprobs(model, batch):
+    """
+        len(batch["rejecteds"]) = batch_size
+        len(rejected_log_probas_list) = batch_size
+        len(max_item_indices) = batch_size
+    """
+
+    # Put each tensor to the model and compute the log probs
+    rejected_log_probas_list: List[Tensor] = []
+    with torch.no_grad():
+        for i in range(len(batch["rejecteds"])):
+            rejected_log_probas_list.append(
+                compute_logprobs(
+                    logits=model(batch["rejecteds"][i]).logits,
+                    labels=batch["rejecteds"][i],
+                    selection_mask=batch["rejecteds_mask"][i]
+                )
+            )
+
+    # Get the max of each rejected response
+    return torch.max(torch.stack(rejected_log_probas_list))
 
 
 def get_log_probs(model, batch, is_policy_model: bool):
@@ -16,10 +44,9 @@ def get_log_probs(model, batch, is_policy_model: bool):
             selection_mask=batch["chosen_mask"]
         )
 
-        rejected_log_probas = compute_logprobs(
-            logits=model(batch["rejected"]).logits,
-            labels=batch["rejected"],
-            selection_mask=batch["rejected_mask"]
+        rejected_log_probas = get_max_of_rejected_logprobs(
+            model=model,
+            batch=batch
         )
     else:
         with torch.no_grad():
@@ -29,16 +56,15 @@ def get_log_probs(model, batch, is_policy_model: bool):
                 selection_mask=batch["chosen_mask"]
             )
 
-            rejected_log_probas = compute_logprobs(
-                logits=model(batch["rejected"]).logits,
-                labels=batch["rejected"],
-                selection_mask=batch["rejected_mask"]
+            rejected_log_probas = get_max_of_rejected_logprobs(
+                model=model,
+                batch=batch
             )
 
     return chosen_log_probas, rejected_log_probas
 
 
-def compute_dpo_loss_batch(batch: ProcessedBatch, policy_model, reference_model, beta):
+def compute_gdpo_loss_batch(batch: ProcessedBatch, policy_model, reference_model, beta):
     """Compute the DPO loss on an input batch"""
     policy_chosen_log_probas, policy_rejected_log_probas = get_log_probs(
         model=policy_model,
@@ -64,7 +90,7 @@ def compute_dpo_loss_batch(batch: ProcessedBatch, policy_model, reference_model,
     return loss, chosen_rewards, rejected_rewards
 
 
-def compute_dpo_loss_loader(data_loader, policy_model, reference_model, beta, num_batches=None):
+def compute_gdpo_loss_loader(data_loader, policy_model, reference_model, beta, num_batches=None):
     """Apply compute_dpo_loss_batch to a whole data loader"""
 
     total_loss, total_chosen_rewards, total_rejected_rewards = 0., 0., 0.
@@ -79,7 +105,7 @@ def compute_dpo_loss_loader(data_loader, policy_model, reference_model, beta, nu
         num_batches = min(num_batches, len(data_loader))
     for i, batch in enumerate(data_loader):
         if i < num_batches:
-            loss, chosen_rewards, rejected_rewards = compute_dpo_loss_batch(
+            loss, chosen_rewards, rejected_rewards = compute_gdpo_loss_batch(
                 batch=batch,
                 policy_model=policy_model,
                 reference_model=reference_model,
@@ -99,12 +125,12 @@ def compute_dpo_loss_loader(data_loader, policy_model, reference_model, beta, nu
     return total_loss, total_chosen_rewards, total_rejected_rewards
 
 
-def evaluate_dpo_loss_loader(policy_model, reference_model, train_loader, val_loader, beta, eval_iter):
+def evaluate_gdpo_loss_loader(policy_model, reference_model, train_loader, val_loader, beta, eval_iter):
     """Compute the DPO loss for the training and validation dataset"""
 
     policy_model.eval()
     with torch.no_grad():
-        train_loss, train_chosen_rewards, train_rejected_rewards = compute_dpo_loss_loader(
+        train_loss, train_chosen_rewards, train_rejected_rewards = compute_gdpo_loss_loader(
             data_loader=train_loader,
             policy_model=policy_model,
             reference_model=reference_model,
@@ -112,7 +138,7 @@ def evaluate_dpo_loss_loader(policy_model, reference_model, train_loader, val_lo
             num_batches=eval_iter
         )
 
-        val_loss, val_chosen_rewards, val_rejected_rewards = compute_dpo_loss_loader(
+        val_loss, val_chosen_rewards, val_rejected_rewards = compute_gdpo_loss_loader(
             data_loader=val_loader,
             policy_model=policy_model,
             reference_model=reference_model,
@@ -131,3 +157,24 @@ def evaluate_dpo_loss_loader(policy_model, reference_model, train_loader, val_lo
 
     policy_model.train()
     return res
+
+
+def dummy_loss_function(batch, policy_model):
+    # Extract chosen and rejected tensors from the batch
+    chosen_logits = policy_model(batch["chosen"]).logits  # Shape: (2, x, 128256)
+    # rejecteds_logits = get_logits(policy_model, batch['rejecteds'][0][:2])  # Shape: (3, x, 128256)
+    # rejecteds_logits = chosen_logits.clone()
+
+    # Compute a dummy loss: Mean Squared Error between chosen and rejected
+    # We will average the error over the 3 options in rejecteds
+    # Use chosen as the target for simplicity
+
+    # Calculate MSE loss between chosen and each rejected option
+    mse_loss = F.mse_loss(chosen_logits, chosen_logits / 2, reduction='mean')  # Scalar loss
+    print("mse_loss:", mse_loss)
+    # Dummy rewards (use random values for chosen and rejected rewards for testing)
+    chosen_rewards = torch.rand(chosen_logits.size(0))  # Random rewards for 'chosen', shape: (2,)
+    rejected_rewards = torch.rand(chosen_logits.size(0),
+                                  chosen_logits.size(1))  # Random rewards for 'rejected', shape: (3, x)
+
+    return mse_loss, chosen_rewards, rejected_rewards
