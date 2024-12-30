@@ -188,6 +188,7 @@ def start_training(policy_model, reference_model, train_loader, val_loader, meth
                 eval_freq=5,
                 eval_iter=5
             )
+            policy_model.save_pretrained(f"{Args.model_path_prefix}/gdpo/model")
 
         elif method == "dpo":
             tracking = train_model_dpo(
@@ -201,6 +202,7 @@ def start_training(policy_model, reference_model, train_loader, val_loader, meth
                 eval_freq=5,
                 eval_iter=5,
             )
+            policy_model.save_pretrained(f"{Args.model_path_prefix}/dpo/model")
 
     end_time = time.time()
     execution_time_minutes = (end_time - start_time) / 60
