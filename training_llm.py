@@ -11,7 +11,7 @@ import traceback
 def train_model_gdpo(
         policy_model, reference_model, train_loader, val_loader,
         optimizer: Optimizer, num_epochs, beta,
-        eval_freq, eval_iter, start_context, tokenizer
+        eval_freq, eval_iter
 ):
     # Initialize lists to track losses and tokens seen
     tracking = {
@@ -150,7 +150,7 @@ def train_model_dpo(
     return tracking
 
 
-def start_training(policy_model, reference_model, train_loader, val_loader, val_data, tokenizer, method="gdpo"):
+def start_training(policy_model, reference_model, train_loader, val_loader, method="gdpo"):
     start_time = time.time()
 
     torch.manual_seed(Args.torch_seed)
@@ -168,9 +168,7 @@ def start_training(policy_model, reference_model, train_loader, val_loader, val_
                 num_epochs=Args.num_epochs,
                 beta=0.1,  # value between 0.1 and 0.5
                 eval_freq=5,
-                eval_iter=5,
-                start_context=format_input(val_data[2]),
-                tokenizer=tokenizer
+                eval_iter=5
             )
 
         elif method == "dpo":
@@ -184,8 +182,6 @@ def start_training(policy_model, reference_model, train_loader, val_loader, val_
                 beta=0.1,  # value between 0.1 and 0.5
                 eval_freq=5,
                 eval_iter=5,
-                start_context=format_input(val_data[2]),
-                tokenizer=tokenizer
             )
 
     end_time = time.time()

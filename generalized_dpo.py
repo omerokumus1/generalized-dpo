@@ -17,7 +17,7 @@ from training_llm import start_training
 
 
 def set_arguments():
-    Args.pad_token_id = 128001
+    pass
 
 
 set_arguments()
@@ -98,6 +98,7 @@ if Args.DEBUG:
 
 print("\n -> Loading policy_model and reference_model..")
 policy_model = model
+model = None  # Free up memory
 reference_model, _ = load_llm(Args.LLM)
 reference_model.eval()
 
@@ -140,8 +141,8 @@ if Args.DEBUG:
 # * Ch4. Implementing the DPO Loss Function
 print("\n\nCh4. Implementing the DPO Loss Function")
 
-# * Ch5. Training the Model
-print("\n\nCh5. Training the Model")
+# * Ch5. Initial Responses
+print("\n\nCh5. Initial Responses")
 print("\t-> Initial losses and rewards:")
 start_time = time.time()
 res = evaluate_gdpo_loss_loader(
@@ -167,19 +168,21 @@ print_model_responses(policy_model, reference_model, val_data, tokenizer)
 print("\nEmptying cache...")
 torch.cuda.empty_cache()
 
-print("\nStarting training...")
-tracking = start_training(policy_model, reference_model, train_loader, val_loader, val_data, tokenizer)
+# * Ch6. G-DPO training
+print("\nCh6. G-DPO training")
+print("\nCh6. Starting G-DPO training...")
+tracking = start_training(policy_model, reference_model, train_loader, val_loader, method="gdpo")
 # Print a sample text after each epoch
 utils.generate_and_print_sample(
     model=policy_model,
     tokenizer=tokenizer,
     device=Args.device,
-    start_context=format_input(val_data[2])
+    start_context=format_input(val_data[2]),
 )
 
-# * Ch6. Evaluating the Model
-print("\n\nCh6. Evaluating the Model")
-print("\t-> Plotting DPO Loss:")
+# * Ch7. Evaluating G-DPO Model
+print("\n\nCh7. Evaluating G-DPO Model")
+print("\t-> Plotting G-DPO Loss:")
 epochs_tensor = torch.linspace(0, Args.num_epochs, len(tracking["train_losses"]))
 utils.plot_losses(
     epochs_seen=epochs_tensor,
@@ -188,7 +191,7 @@ utils.plot_losses(
     val_losses=tracking["val_losses"],
     train_loss_label="Train loss",
     val_loss_label="Validation loss",
-    title="DPO Losses"
+    title="G-DPO Losses"
 )
 
 print("\t-> Final losses and rewards:")
