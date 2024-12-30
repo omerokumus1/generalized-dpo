@@ -13,6 +13,7 @@ from matplotlib.ticker import MaxNLocator
 import numpy as np
 import tiktoken
 import torch
+import os
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 from importlib.metadata import version
@@ -326,3 +327,16 @@ def debug_forward_pass(model, input):
             if torch.isnan(output).any() or torch.isinf(output).any():
                 print(f"Layer {name} produced NaN values.")
                 break
+
+
+def monitor_gpu_usage():
+    print("PyTorch GPU Stats:")
+    print(f"\tAllocated Memory (Actively Used):                 {torch.cuda.memory_allocated() / 1e6:.2f} MB")
+    print(f"\tReserved Memory (Cached to improve performance):  {torch.cuda.memory_reserved() / 1e6:.2f} MB")
+    print(f"\tPeak Allocated:                                   {torch.cuda.max_memory_allocated() / 1e6:.2f} MB")
+    print(f"\tPeak Reserved:                                    {torch.cuda.max_memory_reserved() / 1e6:.2f} MB")
+
+    print("nvidia-smi Output:")
+    os.system("nvidia-smi")
+    print("-" * 40)
+    print("\n")
