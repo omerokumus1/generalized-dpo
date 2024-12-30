@@ -203,6 +203,23 @@ def plot_losses(epochs_seen, tokens_seen, train_losses, val_losses, train_loss_l
     plt.show()
 
 
+def plot_gpu_usage(tokens_seen, reserved_gpu_memory, allocated_gpu_memory, title):
+    fig, ax1 = plt.subplots(figsize=(5, 3))
+
+    # Plot reserved and allocated GPU memory against tokens seen
+    ax1.plot(tokens_seen, reserved_gpu_memory, label="Reserved GPU memory")
+    ax1.plot(tokens_seen, allocated_gpu_memory, linestyle="-.", label="Allocated GPU memory")
+    ax1.set_xlabel("Tokens seen")
+    ax1.set_ylabel("Memory (MB)")
+    ax1.set_title(title)
+    ax1.legend(loc="best")
+    ax1.xaxis.set_major_locator(MaxNLocator(integer=True))  # only show integer labels on x-axis
+
+    fig.tight_layout()  # Adjust layout to make room
+    plt.savefig("gpu-usage-plot.pdf")
+    plt.show()
+
+
 def library_versions():
     pkgs = [
         "tiktoken",  # Tokenizer
@@ -330,13 +347,26 @@ def debug_forward_pass(model, input):
 
 
 def monitor_gpu_usage():
-    print("PyTorch GPU Stats:")
-    print(f"\tAllocated Memory (Actively Used):                 {torch.cuda.memory_allocated() / 1e6:.2f} MB")
-    print(f"\tReserved Memory (Cached to improve performance):  {torch.cuda.memory_reserved() / 1e6:.2f} MB")
-    print(f"\tPeak Allocated:                                   {torch.cuda.max_memory_allocated() / 1e6:.2f} MB")
-    print(f"\tPeak Reserved:                                    {torch.cuda.max_memory_reserved() / 1e6:.2f} MB")
+    num_gpus = torch.cuda.device_count()  # Get the number of GPUs
+    print("\nGPU Memory Usage:")
+    for gpu_id in range(num_gpus):
+        print(f"GPU {gpu_id}:")
+        print(f"\tAllocated Memory: {torch.cuda.memory_allocated(gpu_id) / 1e6:.2f} MB")
+        print(f"\tReserved Memory:  {torch.cuda.memory_reserved(gpu_id) / 1e6:.2f} MB")
+        print("-" * 40)
 
-    print("nvidia-smi Output:")
-    os.system("nvidia-smi")
+    # print("nvidia-smi Output:")
+    # os.system("nvidia-smi")
     print("-" * 40)
     print("\n")
+
+
+def print_peak_gpu_usage():
+    num_gpus = torch.cuda.device_count()  # Get the number of GPUs
+
+    print("\nPeak GPU Memory Usage:")
+    for gpu_id in range(num_gpus):
+        print(f"GPU {gpu_id}:")
+        print(f"\tMax Allocated:    {torch.cuda.max_memory_allocated(gpu_id) / 1e6:.2f} MB")
+        print(f"\tMax Reserved:     {torch.cuda.max_memory_reserved(gpu_id) / 1e6:.2f} MB")
+        print("-" * 40)
