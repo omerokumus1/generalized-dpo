@@ -1,3 +1,6 @@
+import json
+import os
+from pathlib import Path
 import torch
 from unsloth import FastLanguageModel
 
@@ -5,10 +8,19 @@ from args import Args
 from supported_llms import LLM
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 
+from typing import Tuple, Any
 
-def load_llm(llm: LLM):
+
+def load_llm(llm: LLM) -> Tuple[torch.nn.Module, Any]:
     model = None
     tokenizer = None
+
+    if Args.is_model_local:
+        tokenizer = AutoTokenizer.from_pretrained(f"{Args.model_path_prefix}/tokenizer/{llm.value}")
+        model = AutoModelForCausalLM.from_pretrained(f"{Args.model_path_prefix}/model/{llm.value}")
+
+        return model, tokenizer
+
     if llm.value.startswith("unsloth/"):
         model, tokenizer = FastLanguageModel.from_pretrained(
             model_name=llm.value,
@@ -41,6 +53,20 @@ def load_llm(llm: LLM):
             device_map='auto'
         )
 
+        tokenizer = AutoTokenizer.from_pretrained(llm.value)
+        model = AutoModelForCausalLM.from_pretrained(
+            llm.value,
+            device_map="auto",
+            torch_dtype=torch.bfloat16,
+            quantization_config=bnb_config,
+        )
+
+    elif llm == LLM.ytu_turkish_llama_8b_instruct_v01:
+        bnb_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_compute_dtype=torch.bfloat16,
+            device_map='auto'
+        )
         tokenizer = AutoTokenizer.from_pretrained(llm.value)
         model = AutoModelForCausalLM.from_pretrained(
             llm.value,
