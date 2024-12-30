@@ -1,5 +1,7 @@
 import time
 import torch
+
+import utils
 from args import Args
 from custom_types import ProcessedBatch
 from gdpo_loss import compute_gdpo_loss_batch, evaluate_gdpo_loss_loader, dummy_loss_function
@@ -21,7 +23,9 @@ def train_model_gdpo(
         "val_losses": [],
         "val_chosen_rewards": [],
         "val_rejected_rewards": [],
-        "tokens_seen": []
+        "tokens_seen": [],
+        "reserved_gpu_memory": [],
+        "allocated_gpu_memory": [],
     }
     tokens_seen, global_step = 0, -1
 
@@ -63,18 +67,24 @@ def train_model_gdpo(
                     tracking["val_chosen_rewards"].append(res["val_chosen_reward"])
                     tracking["val_rejected_rewards"].append(res["val_rejected_reward"])
                     tracking["tokens_seen"].append(tokens_seen)
+                    tracking["reserved_gpu_memory"].append(f"{torch.cuda.memory_reserved() / 1e6:.2f}")
+                    tracking["allocated_gpu_memory"].append(f"{torch.cuda.memory_allocated() / 1e6:.2f}")
                     train_reward_margin = res["train_chosen_reward"] - res["train_rejected_reward"]
                     val_reward_margin = res["val_chosen_reward"] - res["val_rejected_reward"]
 
+                    print()
                     print(
                         f"Ep {epoch + 1} (Step {global_step:06d}): "
                         f"Train loss {res['train_loss']:.3f}, Val loss {res['val_loss']:.3f}, "
                         f"Train reward margins {train_reward_margin:.3f}, "
-                        f"Val reward margins {val_reward_margin:.3f}"
+                        f"Val reward margins {val_reward_margin:.3f}, "
                     )
+                    utils.monitor_gpu_usage()
+
     except:
         traceback.print_exc()
-        return tracking
+
+    utils.print_peak_gpu_usage()
 
     return tracking
 
@@ -92,7 +102,9 @@ def train_model_dpo(
         "val_losses": [],
         "val_chosen_rewards": [],
         "val_rejected_rewards": [],
-        "tokens_seen": []
+        "tokens_seen": [],
+        "reserved_gpu_memory": [],
+        "allocated_gpu_memory": [],
     }
     tokens_seen, global_step = 0, -1
 
@@ -134,18 +146,24 @@ def train_model_dpo(
                     tracking["val_chosen_rewards"].append(res["val_chosen_reward"])
                     tracking["val_rejected_rewards"].append(res["val_rejected_reward"])
                     tracking["tokens_seen"].append(tokens_seen)
+                    tracking["reserved_gpu_memory"].append(f"{torch.cuda.memory_reserved() / 1e6:.2f}")
+                    tracking["allocated_gpu_memory"].append(f"{torch.cuda.memory_allocated() / 1e6:.2f}")
                     train_reward_margin = res["train_chosen_reward"] - res["train_rejected_reward"]
                     val_reward_margin = res["val_chosen_reward"] - res["val_rejected_reward"]
 
+                    print()
                     print(
                         f"Ep {epoch + 1} (Step {global_step:06d}): "
                         f"Train loss {res['train_loss']:.3f}, Val loss {res['val_loss']:.3f}, "
                         f"Train reward margins {train_reward_margin:.3f}, "
-                        f"Val reward margins {val_reward_margin:.3f}"
+                        f"Val reward margins {val_reward_margin:.3f}, "
                     )
+                    utils.monitor_gpu_usage()
+
     except:
         traceback.print_exc()
-        return tracking
+
+    utils.print_peak_gpu_usage()
 
     return tracking
 
