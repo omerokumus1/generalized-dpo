@@ -208,9 +208,15 @@ utils.plot_losses(
     title="Reward Margins"
 )
 
+utils.plot_gpu_usage(
+    tokens_seen=tracking["tokens_seen"],
+    reserved_gpu_memory=tracking["reserved_gpu_memory"],
+    allocated_gpu_memory=tracking["allocated_gpu_memory"],
+    title="G-DPO GPU Usage (MB)"
+)
+
 print("\t-> First 3 of final model's responses on validation_data:")
 print_model_responses(policy_model, reference_model, val_data, tokenizer)
-
 
 # * Ch8. DPO Training
 print("\nCh8. DPO training")
@@ -243,4 +249,11 @@ utils.plot_losses(
     train_loss_label="Train loss",
     val_loss_label="Validation loss",
     title="DPO Losses"
+)
+
+utils.plot_gpu_usage(
+    tokens_seen=tracking["tokens_seen"],
+    reserved_gpu_memory=tracking["reserved_gpu_memory"],
+    allocated_gpu_memory=tracking["allocated_gpu_memory"],
+    title="DPO GPU Usage (MB)"
 )
