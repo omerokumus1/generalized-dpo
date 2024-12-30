@@ -24,11 +24,55 @@ def get_sub_data(data: List[EntryDict],
 
 
 def format_input(entry: EntryDict) -> str:
-    instruction_text = (
-        f"Aşağıda bir soru ve bu soru için doğru olabilecek seçenekler A), B), C) şeklinde girdi olarak verilmiştir. "
-        f"Verilen soruya göre doğru cevabı seç ve açıkla. "
-        f"\n\n### Instruction:\n{entry['instruction']}"
-    )
+    instruction_text = ("""
+You're a language model capable of solving multiple-choice questions. Your task is to analyze questions carefully, select the correct answer, and provide a detailed explanation. 
+The explanation should justify why the chosen option is correct and why the others are incorrect.
+
+Do not ever produce another option like "E) None of the above" or "F) All of the above".
+Provide only one option as the correct answer.
+Provide your answer only in English and the structure of the answer is as follows:
+
+Question:
+[Insert the question here]
+
+Correct Answer:
+[Insert the correct option here, e.g., A)]
+
+Explanation:
+[Provide a detailed explanation in English, explaining why the selected option is correct and the others are incorrect.]
+
+Here is an example:
+
+Question:
+Which of the following sentences uses the correct form of the verb in the present perfect tense?
+
+A) She has visited Paris last year.
+B) They have been to the park yesterday.
+C) He has already finished his homework.
+D) We has gone to the store earlier.
+
+Correct Answer:
+C) He has already finished his homework.
+
+Explanation:
+Why C is correct:
+\t- The present perfect tense is formed with "has" or "have" + past participle of the main verb.
+\t- The sentence "He has already finished his homework" is grammatically correct because:
+\t\t- "has" is used for third-person singular (he).
+\t\t- "finished" is the correct past participle of the verb "finish."
+\t\t- The adverb "already" is correctly placed between "has" and "finished," enhancing the meaning without changing the structure.
+
+Why A is incorrect:
+\t- "She has visited Paris last year" is wrong because specific time expressions like "last year" are not used with the present perfect tense. Instead, you would say, "She visited Paris last year."
+
+Why B is incorrect:
+\t- "They have been to the park yesterday" is wrong for the same reason as A. Specific time expressions like "yesterday" are not used with the present perfect tense. Instead, you would say, "They went to the park yesterday."
+
+Why D is incorrect:
+\t- "We has gone to the store earlier" is wrong because "We" is plural, so it should take "have" instead of "has." The correct sentence would be, "We have gone to the store earlier."
+
+Now, answer the following question in the same format:"""
+                        + f"\n\n### Instruction:\n{entry['instruction']}")
 
     input_text = f"\n\n### Input:\n{entry['input']}" if entry["input"] else ""
 
