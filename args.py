@@ -6,7 +6,7 @@ class Args:
     DEBUG = True
     data_file_path: str = "data/generalized_dpo_data.json"
     finetuned_model_path = "gpt2-medium355M-sft.pth"
-    LLM = LLM.unsloth_llama_3_3b_instruct_bnb_4bit
+    LLM = LLM.unsloth_llama3_1b_instruct
     model_path_prefix = "cache/llama3_1b"
     is_model_local = True
 
