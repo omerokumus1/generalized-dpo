@@ -9,6 +9,11 @@ from custom_types import ProcessedBatch
 from loss_commons import compute_dpo_loss, compute_logprobs
 
 
+def get_logits(model, input):
+    input.to(utils.get_model_device(model))
+    return model(input).logits
+
+
 def get_max_of_rejected_logprobs(model, batch):
     """
         len(batch["rejecteds"]) = batch_size
@@ -22,7 +27,7 @@ def get_max_of_rejected_logprobs(model, batch):
         for i in range(len(batch["rejecteds"])):
             rejected_log_probas_list.append(
                 compute_logprobs(
-                    logits=model(batch["rejecteds"][i]).logits,
+                    logits=get_logits(model, batch["rejecteds"][i]),
                     labels=batch["rejecteds"][i],
                     selection_mask=batch["rejecteds_mask"][i]
                 )
@@ -39,7 +44,7 @@ def get_log_probs(model, batch, is_policy_model: bool):
     if is_policy_model:
         # print("get_log_probs is_policy_model")
         chosen_log_probas = compute_logprobs(
-            logits=model(batch["chosen"]).logits,
+            logits=get_logits(model, batch["chosen"]),
             labels=batch["chosen"],
             selection_mask=batch["chosen_mask"]
         )
@@ -51,7 +56,7 @@ def get_log_probs(model, batch, is_policy_model: bool):
     else:
         with torch.no_grad():
             chosen_log_probas = compute_logprobs(
-                logits=model(batch["chosen"]).logits,
+                logits=get_logits(model, batch["chosen"]),
                 labels=batch["chosen"],
                 selection_mask=batch["chosen_mask"]
             )
@@ -161,7 +166,7 @@ def evaluate_gdpo_loss_loader(policy_model, reference_model, train_loader, val_l
 
 def dummy_loss_function(batch, policy_model):
     # Extract chosen and rejected tensors from the batch
-    chosen_logits = policy_model(batch["chosen"]).logits  # Shape: (2, x, 128256)
+    chosen_logits = get_logits(policy_model, batch["chosen"])  # Shape: (2, x, 128256)
     # rejecteds_logits = get_logits(policy_model, batch['rejecteds'][0][:2])  # Shape: (3, x, 128256)
     # rejecteds_logits = chosen_logits.clone()
 

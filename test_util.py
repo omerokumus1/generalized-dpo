@@ -1,5 +1,6 @@
 import torch
 
+import utils
 from args import Args
 from batch_processing import decode_tokens_from_batch
 from gdpo_loss import compute_gdpo_loss_batch
@@ -13,7 +14,7 @@ that appropriately completes the request.
 ### Instruction:
 Convert the active sentence to passive: 'The chef cooks the meal every day.'
 """
-    input_ids = tokenizer(prompt, return_tensors="pt").input_ids.to(Args.device)
+    input_ids = tokenizer(prompt, return_tensors="pt").input_ids.to(utils.get_model_device(model))
     token_ids = generate(
         model=model,
         idx=input_ids,

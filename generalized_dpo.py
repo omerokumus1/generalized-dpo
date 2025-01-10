@@ -97,10 +97,12 @@ if Args.DEBUG:
     test_model(model, tokenizer)
 
 print("\n -> Loading policy_model and reference_model..")
-policy_model = model
-model = None  # Free up memory
-reference_model, _ = load_llm(Args.LLM)
+reference_model = model
 reference_model.eval()
+
+model = None  # Free up memory
+policy_model, _ = load_llm(Args.LLM, gpu_rank=1)
+policy_model.train()
 
 # ? 2.4. Creating training, validation, and test set data loaders
 print("\n\n# 2.4. Creating training, validation, and test set data loaders")
@@ -135,8 +137,8 @@ test_loader = DataLoader(
     num_workers=Args.num_workers
 )
 
-if Args.DEBUG:
-    test_data_loader(train_loader, tokenizer, "Train Loader")
+# if Args.DEBUG:
+#    test_data_loader(train_loader, tokenizer, "Train Loader")
 
 # * Ch4. Implementing the DPO Loss Function
 print("\n\nCh4. Implementing the DPO Loss Function")
@@ -176,7 +178,7 @@ tracking = start_training(policy_model, reference_model, train_loader, val_loade
 utils.generate_and_print_sample(
     model=policy_model,
     tokenizer=tokenizer,
-    device=Args.device,
+    device=utils.get_model_device(policy_model),
     start_context=format_input(val_data[2]),
 )
 
@@ -225,7 +227,7 @@ policy_model = None  # Free up memory
 torch.cuda.empty_cache()
 
 print("\n -> Loading new model for DPO")
-policy_model, tokenizer = load_llm(Args.LLM)
+policy_model, tokenizer = load_llm(Args.LLM, gpu_rank=2)
 
 print("\nStarting DPO training...")
 tracking = start_training(policy_model, reference_model, train_loader, val_loader, method="dpo")
@@ -233,7 +235,7 @@ tracking = start_training(policy_model, reference_model, train_loader, val_loade
 utils.generate_and_print_sample(
     model=policy_model,
     tokenizer=tokenizer,
-    device=Args.device,
+    device=utils.get_model_device(policy_model),
     start_context=format_input(val_data[2]),
 )
 
