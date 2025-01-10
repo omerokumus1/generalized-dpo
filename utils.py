@@ -370,3 +370,10 @@ def print_peak_gpu_usage():
         print(f"\tMax Allocated:    {torch.cuda.max_memory_allocated(gpu_id) / 1e6:.2f} MB")
         print(f"\tMax Reserved:     {torch.cuda.max_memory_reserved(gpu_id) / 1e6:.2f} MB")
         print("-" * 40)
+
+
+def get_model_device(model):
+    """
+    Returns the device where the model's parameters are located.
+    """
+    return next(model.parameters()).device
