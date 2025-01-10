@@ -11,13 +11,31 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from typing import Tuple, Any
 
 
-def load_llm(llm: LLM) -> Tuple[torch.nn.Module, Any]:
-    model = None
-    tokenizer = None
+def load_llm(llm: LLM, gpu_rank: int = 0) -> Tuple[torch.nn.Module, Any]:
 
     if Args.is_model_local:
         tokenizer = AutoTokenizer.from_pretrained(f"{Args.model_path_prefix}/tokenizer/{llm.value}")
-        model = AutoModelForCausalLM.from_pretrained(f"{Args.model_path_prefix}/model/{llm.value}")
+        model = AutoModelForCausalLM.from_pretrained(
+            f"{Args.model_path_prefix}/model/{llm.value}",
+            device_map="auto",
+            torch_dtype=torch.bfloat16,
+        )
+        model = FastLanguageModel.get_peft_model(
+            model,
+            r=16,  # Choose any number > 0 ! Suggested 8, 16, 32, 64, 128
+            target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
+                            "gate_proj", "up_proj", "down_proj", ],
+            lora_alpha=16,
+            lora_dropout=0,  # Supports any, but = 0 is optimized
+            bias="none",  # Supports any, but = "none" is optimized
+            # [NEW] "unsloth" uses 30% less VRAM, fits 2x larger batch sizes!
+            use_gradient_checkpointing="unsloth",  # True or "unsloth" for very long context
+            random_state=3407,
+            use_rslora=False,  # We support rank stabilized LoRA
+            loftq_config=None,  # And LoftQ
+        )
+        device = torch.device(f"cuda:{gpu_rank}")
+        model.to(device)
 
         return model, tokenizer
 
