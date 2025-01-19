@@ -3,7 +3,7 @@ from supported_llms import LLM
 
 
 class Args:
-    DEBUG = True
+    DEBUG = False
     data_file_path: str = "data/generalized_dpo_data.json"
     finetuned_model_path = "gpt2-medium355M-sft.pth"
     LLM = LLM.unsloth_llama3_1b_instruct
@@ -13,7 +13,7 @@ class Args:
     train_percent: float = 0.85
     test_percent: float = 0.1
     sub_data_size: int = 1000
-    use_sub_data = True
+    use_sub_data = False
 
     pad_token_id = 128001
 
