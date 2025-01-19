@@ -6,10 +6,10 @@ import torch.nn.functional as F
 # This function calculates logarithms, and you need to pass the combined
 # scores of rejected answers.
 def compute_dpo_loss(
-        policy_chosen_logprobs,
-        policy_rejected_logprobs,
-        reference_chosen_logprobs,
-        reference_rejected_logprobs,
+        policy_chosen_logprobs: Tensor,
+        policy_rejected_logprobs: Tensor,
+        reference_chosen_logprobs: Tensor,
+        reference_rejected_logprobs: Tensor,
         beta=0.1,
 ):
     """Compute the DPO loss for a batch of policy and reference model log probabilities.
@@ -25,8 +25,10 @@ def compute_dpo_loss(
     Returns:
         A tuple of three tensors: (loss, chosen_rewards, rejected_rewards).
     """
-    reference_chosen_logprobs = reference_chosen_logprobs.to(policy_chosen_logprobs.device)
-    reference_rejected_logprobs = reference_rejected_logprobs.to(policy_rejected_logprobs.device)
+    device = policy_chosen_logprobs.device
+    reference_chosen_logprobs = reference_chosen_logprobs.to(device)
+    reference_rejected_logprobs = reference_rejected_logprobs.to(device)
+
     model_logratios = policy_chosen_logprobs - policy_rejected_logprobs
     reference_logratios = reference_chosen_logprobs - reference_rejected_logprobs
     logits = model_logratios - reference_logratios
