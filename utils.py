@@ -204,16 +204,21 @@ def plot_losses(epochs_seen, tokens_seen, train_losses, val_losses, train_loss_l
 
 
 def plot_gpu_usage(tokens_seen, reserved_gpu_memory, allocated_gpu_memory, title):
-    fig, ax1 = plt.subplots(figsize=(5, 3))
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8))
 
     # Plot reserved and allocated GPU memory against tokens seen
     ax1.plot(tokens_seen, reserved_gpu_memory, label="Reserved GPU memory")
-    ax1.plot(tokens_seen, allocated_gpu_memory, linestyle="-.", label="Allocated GPU memory")
+    ax2.plot(tokens_seen, allocated_gpu_memory, linestyle="-.", label="Allocated GPU memory")
     ax1.set_xlabel("Tokens seen")
+    ax2.set_xlabel("Tokens seen")
     ax1.set_ylabel("Memory (MB)")
+    ax2.set_ylabel("Memory (MB)")
     ax1.set_title(title)
+    ax2.set_title(title)
     ax1.legend(loc="best")
+    ax2.legend(loc="best")
     ax1.xaxis.set_major_locator(MaxNLocator(integer=True))  # only show integer labels on x-axis
+    ax2.xaxis.set_major_locator(MaxNLocator(integer=True))  # only show integer labels on x-axis
 
     fig.tight_layout()  # Adjust layout to make room
     plt.savefig("gpu-usage-plot.pdf")
@@ -370,3 +375,10 @@ def print_peak_gpu_usage():
         print(f"\tMax Allocated:    {torch.cuda.max_memory_allocated(gpu_id) / 1e6:.2f} MB")
         print(f"\tMax Reserved:     {torch.cuda.max_memory_reserved(gpu_id) / 1e6:.2f} MB")
         print("-" * 40)
+
+
+def get_model_device(model):
+    """
+    Returns the device where the model's parameters are located.
+    """
+    return next(model.parameters()).device
