@@ -21,6 +21,7 @@ class Args:
     max_context_length: int = 4096
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    data_device = torch.device("cpu")
 
     num_epochs = 1
     batch_size: int = 8

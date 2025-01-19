@@ -98,7 +98,7 @@ def final_padding_processing_for_chosen(processed_batch: ProcessedBatch,
             tensor_stack = tensor_stack[:, :allowed_max_length]
 
         # Move to the specified device
-        processed_batch[key] = tensor_stack.to(Args.device)  # type: ignore
+        processed_batch[key] = tensor_stack.to(Args.data_device)  # type: ignore
 
 
 def final_padding_processing_for_rejecteds(processed_batch: ProcessedBatch,
@@ -116,7 +116,7 @@ def final_padding_processing_for_rejecteds(processed_batch: ProcessedBatch,
 
             # Move to the specified device
             # outer_list becomes Tensor with shape (num_rejecteds, max_length)
-            outer_list[i] = tensor_stack.to(Args.device)
+            outer_list[i] = tensor_stack.to(Args.data_device)
 
 
 def custom_collate_fn(
