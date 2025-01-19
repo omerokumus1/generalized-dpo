@@ -4,6 +4,7 @@ import torch.nn.functional as F
 from torch import Tensor
 
 import utils
+from args import Args
 from custom_types import ProcessedBatch
 # import ipdb
 from loss_commons import compute_dpo_loss, compute_logprobs
@@ -69,6 +70,11 @@ def get_log_probs(model, batch, is_policy_model: bool):
     return chosen_log_probas, rejected_log_probas
 
 
+def put_input_back_to_device(batch):
+    batch["chosen"].to(Args.data_device)
+    for i in range(len(batch["rejecteds"])):
+        batch["rejecteds"][i].to(Args.data_device)
+
 def compute_gdpo_loss_batch(batch: ProcessedBatch, policy_model, reference_model, beta):
     """Compute the DPO loss on an input batch"""
     policy_chosen_log_probas, policy_rejected_log_probas = get_log_probs(
@@ -83,6 +89,9 @@ def compute_gdpo_loss_batch(batch: ProcessedBatch, policy_model, reference_model
         batch=batch,
         is_policy_model=False
     )
+    # TODO put input tensor back to its GPU device
+    put_input_back_to_device(batch)
+
 
     loss, chosen_rewards, rejected_rewards = compute_dpo_loss(
         policy_chosen_logprobs=policy_chosen_log_probas,
