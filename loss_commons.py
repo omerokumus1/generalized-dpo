@@ -56,7 +56,7 @@ def compute_logprobs(logits: Tensor, labels: Tensor, selection_mask: Tensor = No
     """
 
     # Labels are the inputs shifted by one
-    labels = labels[:, 1:].clone()
+    labels = labels[:, 1:].clone().to(logits.device)
 
     # Truncate logits to match the labels num_tokens
     logits = logits[:, :-1, :]
