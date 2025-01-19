@@ -56,7 +56,7 @@ def compute_logprobs(logits: Tensor, labels: Tensor, selection_mask: Tensor = No
     """
 
     # Labels are the inputs shifted by one
-    labels = labels[:, 1:].clone()
+    labels = labels[:, 1:].clone().to(logits.device)
 
     # Truncate logits to match the labels num_tokens
     logits = logits[:, :-1, :]
@@ -72,7 +72,7 @@ def compute_logprobs(logits: Tensor, labels: Tensor, selection_mask: Tensor = No
 
     # The selection_mask we use here is to optionally ignore prompt and padding tokens
     if selection_mask is not None:
-        mask = selection_mask[:, 1:].clone()
+        mask = selection_mask[:, 1:].clone().to(logits.device)
 
         # Apply the mask to filter out padding tokens
         selected_log_probs = selected_log_probs * mask
