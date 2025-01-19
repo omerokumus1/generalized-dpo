@@ -10,3 +10,5 @@ class LLM(Enum):
     ytu_turkish_llama_8b_instruct_v01 = "ytu-ce-cosmos/Turkish-Llama-8b-Instruct-v0.1"
     unsloth_llama3_8b_instruct = "unsloth/Meta-Llama-3.1-8B-Instruct"
     unsloth_llama3_1b_instruct = "unsloth/Llama-3.2-1B-Instruct"
+    meta_llama3_1b_instruct = "meta-llama/Llama-3.2-1B-Instruct"
+    meta_llama3_3b_instruct = "meta-llama/Llama-3.2-3B-Instruct"
