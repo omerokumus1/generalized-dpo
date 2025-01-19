@@ -27,7 +27,7 @@ def compute_dpo_loss(
     """
 
     model_logratios = policy_chosen_logprobs - policy_rejected_logprobs
-    reference_logratios = reference_chosen_logprobs - reference_rejected_logprobs
+    reference_logratios = (reference_chosen_logprobs - reference_rejected_logprobs).to(model_logratios.device)
     logits = model_logratios - reference_logratios
 
     # DPO (Eq. 7 of https://arxiv.org/pdf/2305.18290.pdf)
