@@ -1,7 +1,7 @@
 from typing import List
 import torch
 import torch.nn.functional as F
-from torch import Tensor
+from torch import Tensor, nn
 
 import utils
 from args import Args
@@ -10,9 +10,9 @@ from custom_types import ProcessedBatch
 from loss_commons import compute_dpo_loss, compute_logprobs
 
 
-def get_logits(model, input):
-    input.to(utils.get_model_device(model))
-    return model(input).logits
+def get_logits(model: nn.Module, input: Tensor):
+    input_gpu = input.to(utils.get_model_device(model))
+    return model(input_gpu).logits
 
 
 def get_max_of_rejected_logprobs(model, batch):
@@ -89,8 +89,8 @@ def compute_gdpo_loss_batch(batch: ProcessedBatch, policy_model, reference_model
         batch=batch,
         is_policy_model=False
     )
-    # TODO put input tensor back to its GPU device
-    put_input_back_to_device(batch)
+    # TODO (?) put input tensor back to its GPU device
+    # put_input_back_to_device(batch)
 
 
     loss, chosen_rewards, rejected_rewards = compute_dpo_loss(
