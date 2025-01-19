@@ -25,7 +25,8 @@ def compute_dpo_loss(
     Returns:
         A tuple of three tensors: (loss, chosen_rewards, rejected_rewards).
     """
-
+    reference_chosen_logprobs = reference_chosen_logprobs.to(policy_chosen_logprobs.device)
+    reference_rejected_logprobs = reference_rejected_logprobs.to(policy_rejected_logprobs.device)
     model_logratios = policy_chosen_logprobs - policy_rejected_logprobs
     reference_logratios = reference_chosen_logprobs - reference_rejected_logprobs
     logits = model_logratios - reference_logratios
