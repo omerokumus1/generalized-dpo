@@ -20,20 +20,7 @@ def load_llm(llm: LLM, gpu_rank: int = 0) -> Tuple[torch.nn.Module, Any]:
             device_map="auto",
             torch_dtype=torch.bfloat16,
         )
-        model = FastLanguageModel.get_peft_model(
-            model,
-            r=16,  # Choose any number > 0 ! Suggested 8, 16, 32, 64, 128
-            target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
-                            "gate_proj", "up_proj", "down_proj", ],
-            lora_alpha=16,
-            lora_dropout=0,  # Supports any, but = 0 is optimized
-            bias="none",  # Supports any, but = "none" is optimized
-            # [NEW] "unsloth" uses 30% less VRAM, fits 2x larger batch sizes!
-            use_gradient_checkpointing="unsloth",  # True or "unsloth" for very long context
-            random_state=3407,
-            use_rslora=False,  # We support rank stabilized LoRA
-            loftq_config=None,  # And LoftQ
-        )
+
         device = torch.device(f"cuda:{gpu_rank}")
         model.to(device)
 
