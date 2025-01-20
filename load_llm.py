@@ -12,14 +12,19 @@ from typing import Tuple, Any
 
 
 def load_llm(llm: LLM, gpu_rank: int = 0) -> Tuple[torch.nn.Module, Any]:
-
     if Args.is_model_local:
         tokenizer = AutoTokenizer.from_pretrained(f"{Args.model_path_prefix}/tokenizer/{llm.value}")
+        bnb_config = BitsAndBytesConfig(
+            load_in_4bit=True,  # Enable 4-bit quantization
+            bnb_4bit_compute_dtype=torch.bfloat16,  # Compute in bfloat16 for better performance
+            bnb_4bit_use_double_quant=True,  # Double quantization (optional, improves memory efficiency)
+            bnb_4bit_quant_type="nf4",  # Quantization type (e.g., NormalFloat4)
+        )
         model = AutoModelForCausalLM.from_pretrained(
             f"{Args.model_path_prefix}/model/{llm.value}",
             device_map="auto",
-            torch_dtype=torch.bfloat16,
-            load_in_8bit=True
+            #torch_dtype=torch.bfloat16,
+            quantization_config=bnb_config,
         )
 
         device = torch.device(f"cuda:{gpu_rank}")
