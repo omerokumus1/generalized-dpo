@@ -19,6 +19,7 @@ def load_llm(llm: LLM, gpu_rank: int = 0) -> Tuple[torch.nn.Module, Any]:
             f"{Args.model_path_prefix}/model/{llm.value}",
             device_map="auto",
             torch_dtype=torch.bfloat16,
+            load_in_8bit=True
         )
 
         # device = torch.device(f"cuda:{gpu_rank}")
