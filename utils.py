@@ -16,6 +16,7 @@ import torch
 import os
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
+import subprocess
 from importlib.metadata import version
 
 from args import Args
@@ -382,3 +383,16 @@ def get_model_device(model):
     Returns the device where the model's parameters are located.
     """
     return next(model.parameters()).device
+
+
+def print_nvidia_smi():
+    try:
+        # Run the nvidia-smi command
+        result = subprocess.run(["nvidia-smi"], capture_output=True, text=True, check=True)
+
+        # Print the output
+        print(result.stdout)
+    except FileNotFoundError:
+        print("nvidia-smi command not found. Ensure that NVIDIA drivers are installed.")
+    except subprocess.CalledProcessError as e:
+        print(f"Error while running nvidia-smi: {e}")
