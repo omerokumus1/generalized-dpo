@@ -26,9 +26,11 @@ def load_llm(llm: LLM, gpu_rank: int = 0) -> Tuple[torch.nn.Module, Any]:
             #torch_dtype=torch.bfloat16,
             quantization_config=bnb_config,
         )
+        for name, param in model.named_parameters():
+            print(f"Layer: {name}, Data Type: {param.dtype}, Device: {param.device}")
 
-        device = torch.device(f"cuda:{gpu_rank}")
-        model.to(device)
+        #device = torch.device(f"cuda:{gpu_rank}")
+        #model.to(device)
 
         return model, tokenizer
 
