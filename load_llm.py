@@ -22,8 +22,8 @@ def load_llm(llm: LLM, gpu_rank: int = 0) -> Tuple[torch.nn.Module, Any]:
             load_in_8bit=True
         )
 
-        # device = torch.device(f"cuda:{gpu_rank}")
-        # model.to(device)
+        device = torch.device(f"cuda:{gpu_rank}")
+        model.to(device)
 
         return model, tokenizer
 
