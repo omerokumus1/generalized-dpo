@@ -82,6 +82,7 @@ def train_model_gdpo(
                     utils.monitor_gpu_usage()
 
     except:
+        print("********** Exception Occurred **********")
         traceback.print_exc()
         utils.print_nvidia_smi()
 
