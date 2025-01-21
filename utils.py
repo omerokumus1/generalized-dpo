@@ -200,7 +200,7 @@ def plot_losses(epochs_seen, tokens_seen, train_losses, val_losses, train_loss_l
     ax2.set_xlabel("Tokens seen")
 
     fig.tight_layout()  # Adjust layout to make room
-    plt.savefig("loss-plot.pdf")
+    plt.savefig("../plots/loss-plot.pdf")
     plt.show()
 
 
@@ -222,7 +222,7 @@ def plot_gpu_usage(tokens_seen, reserved_gpu_memory, allocated_gpu_memory, title
     ax2.xaxis.set_major_locator(MaxNLocator(integer=True))  # only show integer labels on x-axis
 
     fig.tight_layout()  # Adjust layout to make room
-    plt.savefig("gpu-usage-plot.pdf")
+    plt.savefig("../plots/gpu-usage-plot.pdf")
     plt.show()
 
 
