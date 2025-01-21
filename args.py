@@ -24,7 +24,7 @@ class Args:
     data_device = torch.device("cpu")
 
     num_epochs = 1
-    batch_size: int = 8
+    batch_size: int = 4
     mask_prompt_tokens: bool = True
 
     num_workers: int = 0
