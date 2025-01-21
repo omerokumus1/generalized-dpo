@@ -15,12 +15,6 @@ def load_llm(llm: LLM) -> Tuple[torch.nn.Module, Any]:
     model = None
     tokenizer = None
 
-    if Args.is_model_local:
-        tokenizer = AutoTokenizer.from_pretrained(f"{Args.model_path_prefix}/tokenizer/{llm.value}")
-        model = AutoModelForCausalLM.from_pretrained(f"{Args.model_path_prefix}/model/{llm.value}")
-
-        return model, tokenizer
-
     if llm.value.startswith("unsloth/"):
         model, tokenizer = FastLanguageModel.from_pretrained(
             model_name=llm.value,
