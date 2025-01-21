@@ -101,7 +101,7 @@ reference_model = model
 reference_model.eval()
 
 model = None  # Free up memory
-policy_model, _ = load_llm(Args.LLM, gpu_rank=1)
+policy_model, _ = load_llm(Args.LLM, gpu_rank=1, apply_lora=True)
 policy_model.train()
 
 # ? 2.4. Creating training, validation, and test set data loaders

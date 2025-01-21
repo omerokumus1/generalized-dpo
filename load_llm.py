@@ -7,11 +7,12 @@ from unsloth import FastLanguageModel
 from args import Args
 from supported_llms import LLM
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
+from peft import LoraConfig, TaskType, get_peft_model
 
 from typing import Tuple, Any
 
 
-def load_llm(llm: LLM, gpu_rank: int = 0) -> Tuple[torch.nn.Module, Any]:
+def load_llm(llm: LLM, gpu_rank: int = 0, apply_lora=False) -> Tuple[torch.nn.Module, Any]:
     if Args.is_model_local:
         tokenizer = AutoTokenizer.from_pretrained(f"{Args.model_path_prefix}/tokenizer/{llm.value}")
         bnb_config = BitsAndBytesConfig(
@@ -26,11 +27,24 @@ def load_llm(llm: LLM, gpu_rank: int = 0) -> Tuple[torch.nn.Module, Any]:
             #torch_dtype=torch.bfloat16,
             quantization_config=bnb_config,
         )
-        for name, param in model.named_parameters():
-            print(f"Layer: {name}, Data Type: {param.dtype}, Device: {param.device}")
+
+        if apply_lora:
+            peft_config = LoraConfig(
+                task_type=TaskType.CAUSAL_LM,  # Task type: causal language modeling
+                inference_mode=False,  # Enable training mode
+                r=16,  # LoRA rank (low-rank dimension)
+                lora_alpha=32,  # Scaling factor
+                lora_dropout=0.1,  # Dropout rate
+                target_modules=["q_proj", "v_proj"]  # Target specific layers (e.g., attention layers)
+            )
+
+            model = get_peft_model(model, peft_config)
 
         device = torch.device(f"cuda:{gpu_rank}")
         model.to(device)
+
+        for name, param in model.named_parameters():
+            print(f"Layer: {name}, Data Type: {param.dtype}, Device: {param.device}")
 
         return model, tokenizer
 
