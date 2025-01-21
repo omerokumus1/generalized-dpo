@@ -20,16 +20,17 @@ def load_llm(llm: LLM, gpu_rank: int = 0) -> Tuple[torch.nn.Module, Any]:
             bnb_4bit_use_double_quant=True,  # Double quantization (optional, improves memory efficiency)
             bnb_4bit_quant_type="nf4",  # Quantization type (e.g., NormalFloat4)
         )
-        #device = torch.device(f"cuda:{gpu_rank}")
         model = AutoModelForCausalLM.from_pretrained(
             f"{Args.model_path_prefix}/model/{llm.value}",
-            device_map="cuda:{gpu_rank}",
+            device_map="auto",
             #torch_dtype=torch.bfloat16,
             quantization_config=bnb_config,
         )
-
         for name, param in model.named_parameters():
             print(f"Layer: {name}, Data Type: {param.dtype}, Device: {param.device}")
+
+        device = torch.device(f"cuda:{gpu_rank}")
+        model.to(device)
 
         return model, tokenizer
 
