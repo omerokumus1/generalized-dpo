@@ -37,13 +37,15 @@ def train_model_gdpo(
             for batch_idx, batch in enumerate(train_loader):
                 batch: ProcessedBatch = batch
                 optimizer.zero_grad()  # Reset loss gradients from previous batch iteration
-
+                print("batch_idx:", batch_idx)
+                print("before compute_gdpo_loss_batch")
                 loss, chosen_rewards, rejected_rewards = compute_gdpo_loss_batch(
                     batch=batch,
                     policy_model=policy_model,
                     reference_model=reference_model,
                     beta=beta
                 )
+                print("after compute_gdpo_loss_batch")
                 loss.backward()  # Calculate loss gradients
                 optimizer.step()  # Update model weights using loss gradients
 
@@ -80,6 +82,7 @@ def train_model_gdpo(
                         f"Val reward margins {val_reward_margin:.3f}, "
                     )
                     utils.monitor_gpu_usage()
+                    break
 
     except:
         print("********** Exception Occurred **********")

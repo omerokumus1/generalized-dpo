@@ -25,23 +25,33 @@ def compute_dpo_loss(
     Returns:
         A tuple of three tensors: (loss, chosen_rewards, rejected_rewards).
     """
+    print("Inside compute_dpo_loss")
     device = policy_chosen_logprobs.device
+    print("device:", device)
     reference_chosen_logprobs = reference_chosen_logprobs.to(device)
     reference_rejected_logprobs = reference_rejected_logprobs.to(device)
 
     model_logratios = policy_chosen_logprobs - policy_rejected_logprobs
     reference_logratios = reference_chosen_logprobs - reference_rejected_logprobs
     logits = model_logratios - reference_logratios
+    print("model_logratios:", model_logratios)
+    print("reference_logratios:", reference_logratios)
+    print("logits:", logits)
 
     # DPO (Eq. 7 of https://arxiv.org/pdf/2305.18290.pdf)
     # reference_model's logits can contain inf values
     losses = -F.logsigmoid(beta * logits)
+    print("losses:", losses)
 
     # Optional values to track progress during training
     chosen_rewards = (policy_chosen_logprobs - reference_chosen_logprobs).detach()
     rejected_rewards = (policy_rejected_logprobs - reference_rejected_logprobs).detach()
+    print("chosen_rewards:", chosen_rewards)
+    print("rejected_rewards:", rejected_rewards)
+
 
     # .mean() to average over the samples in the batch
+
     return losses.mean(), chosen_rewards.mean(), rejected_rewards.mean()
 
 
@@ -58,12 +68,17 @@ def compute_logprobs(logits: Tensor, labels: Tensor, selection_mask: Tensor = No
       mean_log_prob: Mean log probability excluding padding tokens.
     """
 
+    print("Inside compute_logprobs")
     # Labels are the inputs shifted by one
     labels = labels[:, 1:].clone().to(logits.device)
+    print("labels:", labels)
 
     # Truncate logits to match the labels num_tokens
     logits = logits[:, :-1, :]
+    print("logits:", logits)
+
     log_probs = F.log_softmax(logits, dim=-1)
+    print("log_probs:", log_probs)
 
     # Gather the log probabilities for the actual labels
     # Here, torch.gather calculates the cross entropy
@@ -72,6 +87,7 @@ def compute_logprobs(logits: Tensor, labels: Tensor, selection_mask: Tensor = No
         dim=-1,
         index=labels.unsqueeze(-1)
     ).squeeze(-1)
+    print("selected_log_probs:", selected_log_probs)
 
     # The selection_mask we use here is to optionally ignore prompt and padding tokens
     if selection_mask is not None:
