@@ -157,7 +157,7 @@ def gdpo_custom_collate_fn(
     return processed_batch
 
 
-def get_customized_collate_fn() -> partial:
+def get_gdpo_customized_collate_fn() -> partial:
     customized_collate_fn = partial(
         gdpo_custom_collate_fn,
         mask_prompt_tokens=Args.mask_prompt_tokens,  # This is optional

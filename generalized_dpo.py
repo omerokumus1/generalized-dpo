@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 import utils
 from PreferenceDataset import PreferenceDataset
 from args import Args
-from batch_processing import get_customized_collate_fn
+from batch_processing import get_gdpo_customized_collate_fn
 from gdpo_loss import evaluate_gdpo_loss_loader
 from evaluating import print_model_responses
 from load_llm import load_llm
@@ -83,7 +83,7 @@ print_data_lengths(data, train_data, test_data, val_data)
 # ? 2.3. Developing a PreferenceDataset class and batch processing function
 print("\n\n# 2.3. Developing a PreferenceDataset class and batch processing function")
 print("\tDevice:", Args.device)
-customized_collate_fn = get_customized_collate_fn()
+customized_collate_fn = get_gdpo_customized_collate_fn()
 print("\tCustomized Collate Function:")
 print(customized_collate_fn)
 
