@@ -166,8 +166,8 @@ def get_gdpo_customized_collate_fn() -> partial:
     return customized_collate_fn
 
 
-def test_customized_collate_fn(collate_fn: partial, data: List[EntryDict], tokenizer,
-                               format_input: Callable[[EntryDict], str]):
+def test_gdpo_customized_collate_fn(collate_fn: partial, data: List[EntryDict], tokenizer,
+                                    format_input: Callable[[EntryDict], str]):
     example_data = data[:2]
     print("Example data:")
     print(type(example_data))
