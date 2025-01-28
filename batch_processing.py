@@ -119,7 +119,7 @@ def final_padding_processing_for_rejecteds(processed_batch: ProcessedBatch,
             outer_list[i] = tensor_stack.to(Args.device)
 
 
-def custom_collate_fn(
+def gdpo_custom_collate_fn(
         batch: List[BatchEntry],
         pad_token_id=Args.pad_token_id,
         allowed_max_length=None,
@@ -159,7 +159,7 @@ def custom_collate_fn(
 
 def get_customized_collate_fn() -> partial:
     customized_collate_fn = partial(
-        custom_collate_fn,
+        gdpo_custom_collate_fn,
         mask_prompt_tokens=Args.mask_prompt_tokens,  # This is optional
         allowed_max_length=Args.max_context_length  # The supported context length of the model
     )
