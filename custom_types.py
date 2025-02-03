@@ -30,7 +30,7 @@ class DpoProcessedBatch(TypedDict):
     prompt: List[Tensor]
     chosen: List[Tensor]
     rejected: List[Tensor]
-    rejected_mask: List[List[Tensor]]  # Finally becomes Tensor with shape (batch_size, num_rejecteds, max_length)
+    rejected_mask: List[Tensor]  # Finally becomes Tensor with shape (batch_size, num_rejecteds, max_length)
     chosen_mask: List[Tensor]  # Finally becomes Tensor with shape (batch_size, max_length)
 
 
