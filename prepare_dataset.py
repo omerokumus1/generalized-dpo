@@ -85,8 +85,7 @@ def get_possible_responses_by_index(data: List[EntryDict], index: int) -> str:
     return f"### Responses:\n{str(data[index]['rejecteds'])}"
 
 
-def get_train_test_validation_data(data: List[EntryDict], train_percent: float, test_percent: float) -> Tuple[
-    List[EntryDict], List[EntryDict], List[EntryDict]]:
+def get_train_test_validation_data(data, train_percent: float, test_percent: float):
     train_portion = int(len(data) * train_percent)
     test_portion = int(len(data) * test_percent)
     val_portion = len(data) - train_portion - test_portion  # Remaining percent
