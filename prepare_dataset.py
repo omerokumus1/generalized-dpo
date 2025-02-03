@@ -3,7 +3,7 @@ import pprint
 from typing import Tuple, List
 
 from args import Args
-from custom_types import EntryDict
+from custom_types import EntryDict, DpoEntryDict
 
 
 def read_data(file_path: str) -> List[EntryDict]:
@@ -23,7 +23,7 @@ def get_sub_data(data: List[EntryDict],
     return data[starting:ending]
 
 
-def format_input(entry: EntryDict) -> str:
+def format_input(entry: EntryDict | DpoEntryDict) -> str:
     instruction_text = ("""
 You're a language model capable of solving multiple-choice questions. Your task is to analyze questions carefully, select the correct answer, and provide a detailed explanation. 
 The explanation should justify why the chosen option is correct and why the others are incorrect.
