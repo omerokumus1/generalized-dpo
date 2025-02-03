@@ -1,6 +1,6 @@
 import torch
 
-from custom_types import ProcessedBatch
+from custom_types import ProcessedBatch, DpoProcessedBatch
 from loss_commons import compute_dpo_loss, compute_logprobs
 
 
@@ -38,7 +38,7 @@ def get_log_probs(model, batch, is_policy_model: bool):
     return chosen_log_probas, rejected_log_probas
 
 
-def compute_dpo_loss_batch(batch: ProcessedBatch, policy_model, reference_model, beta):
+def compute_dpo_loss_batch(batch: DpoProcessedBatch, policy_model, reference_model, beta):
     """Compute the DPO loss on an input batch"""
     policy_chosen_log_probas, policy_rejected_log_probas = get_log_probs(
         model=policy_model,

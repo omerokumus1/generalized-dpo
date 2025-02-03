@@ -3,7 +3,7 @@ import torch
 
 import utils
 from args import Args
-from custom_types import ProcessedBatch
+from custom_types import ProcessedBatch, DpoProcessedBatch
 from gdpo_loss import compute_gdpo_loss_batch, evaluate_gdpo_loss_loader, dummy_loss_function
 from dpo_loss import compute_dpo_loss_batch, evaluate_dpo_loss_loader
 from prepare_dataset import format_input
@@ -115,7 +115,7 @@ def train_model_dpo(
             policy_model.train()  # Set model to training mode
             loss = None
             for batch_idx, batch in enumerate(train_loader):
-                batch: ProcessedBatch = batch
+                batch: DpoProcessedBatch = batch
                 optimizer.zero_grad()  # Reset loss gradients from previous batch iteration
 
                 loss, chosen_rewards, rejected_rewards = compute_dpo_loss_batch(
