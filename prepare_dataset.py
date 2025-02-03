@@ -55,21 +55,11 @@ Correct Answer:
 C) He has already finished his homework.
 
 Explanation:
-Why C is correct:
-\t- The present perfect tense is formed with "has" or "have" + past participle of the main verb.
-\t- The sentence "He has already finished his homework" is grammatically correct because:
-\t\t- "has" is used for third-person singular (he).
-\t\t- "finished" is the correct past participle of the verb "finish."
-\t\t- The adverb "already" is correctly placed between "has" and "finished," enhancing the meaning without changing the structure.
-
-Why A is incorrect:
-\t- "She has visited Paris last year" is wrong because specific time expressions like "last year" are not used with the present perfect tense. Instead, you would say, "She visited Paris last year."
-
-Why B is incorrect:
-\t- "They have been to the park yesterday" is wrong for the same reason as A. Specific time expressions like "yesterday" are not used with the present perfect tense. Instead, you would say, "They went to the park yesterday."
-
-Why D is incorrect:
-\t- "We has gone to the store earlier" is wrong because "We" is plural, so it should take "have" instead of "has." The correct sentence would be, "We have gone to the store earlier."
+- The present perfect tense is formed with "has" or "have" + past participle of the main verb.
+- The sentence "He has already finished his homework" is grammatically correct because:
+\t- "has" is used for third-person singular (he).
+\t- "finished" is the correct past participle of the verb "finish."
+\t- The adverb "already" is correctly placed between "has" and "finished," enhancing the meaning without changing the structure.
 
 Now, answer the following question in the same format:"""
                         + f"\n\n### Instruction:\n{entry['instruction']}")
