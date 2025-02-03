@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 import numpy as np
 import tiktoken
+from tiktoken import Encoding
 import torch
 import os
 import torch.nn as nn
@@ -153,6 +154,15 @@ def text_to_token_ids(text, tokenizer):
 def token_ids_to_text(token_ids, tokenizer):
     flat = token_ids.squeeze(0)  # remove batch dimension
     return tokenizer.decode(flat.tolist(), skip_special_tokens=True)
+
+
+def decode_tokens_from_batch(token_ids, tokenizer) -> str:
+    ids_in_python_list = token_ids.flatten().tolist()
+    return tokenizer.decode(ids_in_python_list, skip_special_tokens=True)
+
+
+def extract_response(response_text: str, input_text: str) -> str:
+    return response_text[len(input_text):].replace("### Response:", "").strip()
 
 
 def calc_loss_batch(input_batch, target_batch, model, device):

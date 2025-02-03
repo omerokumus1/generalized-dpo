@@ -197,32 +197,3 @@ def test_gdpo_customized_collate_fn(collate_fn: partial, data: List[EntryDict], 
         print("\n\tbatch['prompt']:", batch["prompt"])
         print("\n\tbatch['chosen']:", batch["chosen"])
         break
-
-
-def decode_tokens_from_batch(token_ids, tokenizer) -> str:
-    ids_in_python_list = token_ids.flatten().tolist()
-    return tokenizer.decode(ids_in_python_list, skip_special_tokens=True)
-
-
-def token_ids_to_text(token_ids, tokenizer):
-    flat = token_ids.squeeze(0)  # remove batch dimension
-    return tokenizer.decode(flat.tolist(), skip_special_tokens=True)
-
-
-def test_decode_tokens_from_batch(data_loader: DataLoader, tokenizer: Encoding):
-    for batch in data_loader:
-        print("batch.keys:", batch.keys())
-        print("batch['prompt']:", batch["prompt"])
-        print("First propt's token ids")
-        print(batch["prompt"][0])
-        first_prompt_decoded = decode_tokens_from_batch(
-            token_ids=batch["prompt"][0],  # [0] for the first entry in the batch
-            tokenizer=tokenizer,
-        )
-        print("\nFirst prompt decoded from token ids")
-        print(first_prompt_decoded)
-        break
-
-
-def extract_response(response_text: str, input_text: str) -> str:
-    return response_text[len(input_text):].replace("### Response:", "").strip()
