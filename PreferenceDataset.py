@@ -56,25 +56,19 @@ class DpoPreferenceDataset(Dataset):
         self.encoded_texts = []
         for entry in data:
             prompt = format_input(entry)
-            rejected_responses = entry["rejected"]
+            rejected_response = entry["rejected"]
             chosen_response = entry["chosen"]
-
             prompt_tokens = tokenizer.encode(prompt)
             chosen_full_text = f"{prompt}\n\n### Response:\n{chosen_response}"
-
-            rejected_full_text_list = [
-                f"{prompt}\n\n### Response:\n{rejected_response}" for rejected_response in rejected_responses
-            ]
             chosen_full_tokens = tokenizer.encode(chosen_full_text)
 
-            rejected_full_tokens_list = [
-                tokenizer.encode(rejected_full_text) for rejected_full_text in rejected_full_text_list
-            ]
+            rejected_full_text = f"{prompt}\n\n### Response:\n{rejected_response}"
+            rejected_full_tokens = tokenizer.encode(rejected_full_text)
 
             self.encoded_texts.append({
                 "prompt": prompt_tokens,
                 "chosen": chosen_full_tokens,
-                "rejected": rejected_full_tokens_list,
+                "rejected": rejected_full_tokens,
             })
 
     def __getitem__(self, index: int):
@@ -82,5 +76,3 @@ class DpoPreferenceDataset(Dataset):
 
     def __len__(self) -> int:
         return len(self.data)
-
-
