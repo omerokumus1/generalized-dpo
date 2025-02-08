@@ -7,14 +7,12 @@ from torch import Tensor
 class EntryDict(TypedDict):
     instruction: str
     input: str
-    output: str
     chosen: str
     rejecteds: List[str]
 
 class DpoEntryDict(TypedDict):
     instruction: str
     input: str
-    output: str
     chosen: str
     rejected: str
 

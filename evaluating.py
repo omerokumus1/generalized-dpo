@@ -38,7 +38,7 @@ def print_model_responses(policy_model, reference_model, data, tokenizer, respon
         )
 
         print(input_text)
-        print(f"\nCorrect response:\n>> {entry['output']}")
+        print(f"\nCorrect response:\n>> {entry['chosen']}")
         print(f"\nReference model response:\n>> {reference_response_text.strip()}")
         print(f"\nPolicy model response:\n>> {policy_response_text.strip()}")
         print("\n-------------------------------------\n")
@@ -82,7 +82,7 @@ def get_model_responses(policy_model, reference_model, data, tokenizer, response
         )
         policy_responses.append(policy_response_text)
 
-        correct_responses.append(entry['output'])
+        correct_responses.append(entry['chosen'])
         inputs.append(input_text)
 
     return policy_responses, reference_responses, correct_responses, inputs
