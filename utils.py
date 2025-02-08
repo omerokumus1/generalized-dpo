@@ -192,7 +192,7 @@ def calc_loss_loader(data_loader, model, device, num_batches=None):
 
 
 def plot_losses(epochs_seen, tokens_seen, train_losses, val_losses, train_loss_label, val_loss_label, title):
-    fig, ax1 = plt.subplots(figsize=(5, 3))
+    fig, ax1 = plt.subplots(figsize=(12, 6))
 
     # Plot training and validation loss against epochs
     ax1.plot(epochs_seen, train_losses, label=train_loss_label)
