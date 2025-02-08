@@ -7,7 +7,7 @@ import utils
 from custom_types import ProcessedBatch
 # import ipdb
 from loss_commons import compute_dpo_loss, compute_logprobs
-
+import ipdb
 
 def get_max_of_rejected_logprobs(model, batch):
     """
@@ -15,10 +15,9 @@ def get_max_of_rejected_logprobs(model, batch):
         len(rejected_log_probas_list) = batch_size
         len(max_item_indices) = batch_size
     """
-
     # Put each tensor to the model and compute the log probs
-    rejected_log_probas_list: List[Tensor] = []
     with torch.no_grad():
+        rejected_log_probas_list: List[Tensor] = []
         for i in range(len(batch["rejecteds"])):
             rejected_log_probas_list.append(
                 compute_logprobs(
@@ -27,9 +26,24 @@ def get_max_of_rejected_logprobs(model, batch):
                     selection_mask=batch["rejecteds_mask"][i]
                 )
             )
+        # Find the index of the maximum value in each tensor
+        max_indices = [torch.argmax(tensor).item() for tensor in rejected_log_probas_list]
+        tensors_with_max_logprobs = []
+        labels_with_max_logprobs = []
+        for i,k in enumerate(max_indices):
+            tensors_with_max_logprobs.append(batch["rejecteds"][i][k])
+            labels_with_max_logprobs.append(batch["rejecteds_mask"][i][k])
 
-    # Get the max of each rejected response
-    return torch.max(torch.stack(rejected_log_probas_list))
+        tensors_with_max_logprobs = torch.stack(tensors_with_max_logprobs)
+        labels_with_max_logprobs = torch.stack(labels_with_max_logprobs)
+    # Compute the log probs of the max rejected log probs
+    max_rejected_log_probas = compute_logprobs(
+        logits=model(tensors_with_max_logprobs).logits,
+        labels=tensors_with_max_logprobs,
+        selection_mask=labels_with_max_logprobs
+    )
+
+    return max_rejected_log_probas
 
 
 def get_log_probs(model, batch, is_policy_model: bool):
