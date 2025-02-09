@@ -44,45 +44,36 @@ def print_model_responses(policy_model, reference_model, data, tokenizer, respon
         print("\n-------------------------------------\n")
 
 
-def get_model_responses(policy_model, reference_model, data, tokenizer, response_count=3):
+def get_model_response(model, input_text, tokenizer):
+    token_ids = generate(
+        model=model,
+        idx=text_to_token_ids(input_text, tokenizer).to(Args.device),
+        max_new_tokens=256,
+        context_size=Args.max_context_length,
+        eos_id=Args.pad_token_id
+    )
+    generated_text = token_ids_to_text(token_ids, tokenizer)
+    response_text = (
+        generated_text[len(input_text):]
+        .replace("### Response:", "")
+        .strip()
+    )
+
+    return response_text
+
+def get_model_responses(gdpo_model, dpo_model, reference_model, data, tokenizer, response_count=3):
+    dpo_responses = []
+    gdpo_responses = []
     reference_responses = []
-    policy_responses = []
     correct_responses = []
     inputs = []
-    for entry in data[:response_count]:
+    for i, entry in enumerate(data[:response_count]):
+        print(f"Processing entry {i+1}/{response_count}")
         input_text = format_input(entry)
-
-        token_ids = generate(
-            model=reference_model,
-            idx=text_to_token_ids(input_text, tokenizer).to(Args.device),
-            max_new_tokens=256,
-            context_size=Args.max_context_length,
-            eos_id=Args.pad_token_id
-        )
-        generated_text = token_ids_to_text(token_ids, tokenizer)
-        reference_response_text = (
-            generated_text[len(input_text):]
-            .replace("### Response:", "")
-            .strip()
-        )
-        reference_responses.append(reference_response_text)
-
-        token_ids = generate(
-            model=policy_model,
-            idx=utils.text_to_token_ids(input_text, tokenizer).to(Args.device),
-            max_new_tokens=256,
-            context_size=Args.max_context_length,
-            eos_id=Args.pad_token_id
-        )
-        generated_text = token_ids_to_text(token_ids, tokenizer)
-        policy_response_text = (
-            generated_text[len(input_text):]
-            .replace("### Response:", "")
-            .strip()
-        )
-        policy_responses.append(policy_response_text)
-
+        gdpo_responses.append(get_model_response(gdpo_model, input_text, tokenizer))
+        dpo_responses.append(get_model_response(dpo_model, input_text, tokenizer))
+        reference_responses.append(get_model_response(reference_model, input_text, tokenizer))
         correct_responses.append(entry['chosen'])
         inputs.append(input_text)
 
-    return policy_responses, reference_responses, correct_responses, inputs
+    return gdpo_responses, dpo_responses, reference_responses, correct_responses, inputs
