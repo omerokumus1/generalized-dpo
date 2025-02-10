@@ -1,5 +1,6 @@
 import time
 import torch
+from torch.xpu import max_memory_reserved
 
 import utils
 from args import Args
@@ -27,6 +28,8 @@ def train_model_gdpo(
         "tokens_seen": [],
         "reserved_gpu_memory": [],
         "allocated_gpu_memory": [],
+        "max_reserved_gpu_memory": '',
+        "max_allocated_gpu_memory": '',
     }
     tokens_seen, global_step = 0, -1
 
@@ -85,7 +88,9 @@ def train_model_gdpo(
     except:
         traceback.print_exc()
 
-    utils.print_peak_gpu_usage()
+    max_allocated, max_reserved = utils.print_peak_gpu_usage()
+    tracking["max_reserved_gpu_memory"] = max_reserved
+    tracking["max_allocated_gpu_memory"] = max_allocated
 
     return tracking
 
@@ -106,6 +111,8 @@ def train_model_dpo(
         "tokens_seen": [],
         "reserved_gpu_memory": [],
         "allocated_gpu_memory": [],
+        "max_reserved_gpu_memory": '',
+        "max_allocated_gpu_memory": '',
     }
     tokens_seen, global_step = 0, -1
 
@@ -164,7 +171,9 @@ def train_model_dpo(
     except:
         traceback.print_exc()
 
-    utils.print_peak_gpu_usage()
+    max_allocated, max_reserved = utils.print_peak_gpu_usage()
+    tracking["max_reserved_gpu_memory"] = max_reserved
+    tracking["max_allocated_gpu_memory"] = max_allocated
 
     return tracking
 
