@@ -9,3 +9,4 @@ numpy >= 1.26, < 2.1
 pandas >= 2.2.1
 psutil >= 5.9.5
 unsloth
+huggingface_hub
