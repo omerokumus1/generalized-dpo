@@ -175,13 +175,6 @@ torch.cuda.empty_cache()
 print("\nCh6. G-DPO training")
 print("\nCh6. Starting G-DPO training...")
 tracking = start_training(policy_model, reference_model, train_loader, val_loader, method="gdpo")
-# Print a sample text after each epoch
-utils.generate_and_print_sample(
-    model=policy_model,
-    tokenizer=tokenizer,
-    device=Args.device,
-    start_context=format_input(val_data[2]),
-)
 
 # Save the tracking data to a JSON file
 with open('gdpo_tracking.json', 'w') as f:
@@ -227,43 +220,3 @@ utils.plot_gpu_usage(
 
 print("\t-> First 3 of final model's responses on validation_data:")
 print_model_responses(policy_model, reference_model, val_data, tokenizer)
-
-# * Ch8. DPO Training
-print("\nCh8. DPO training")
-print("\nEmptying cache...")
-policy_model = None  # Free up memory
-torch.cuda.empty_cache()
-
-print("\n -> Loading new model for DPO")
-policy_model, tokenizer = load_llm(Args.LLM)
-
-print("\nStarting DPO training...")
-tracking = start_training(policy_model, reference_model, train_loader, val_loader, method="dpo")
-# Print a sample text after each epoch
-utils.generate_and_print_sample(
-    model=policy_model,
-    tokenizer=tokenizer,
-    device=Args.device,
-    start_context=format_input(val_data[2]),
-)
-
-# * Ch0. Evaluating DPO Model
-print("\n\nCh9. Evaluating DPO Model")
-print("\t-> Plotting DPO Loss:")
-epochs_tensor = torch.linspace(0, Args.num_epochs, len(tracking["train_losses"]))
-utils.plot_losses(
-    epochs_seen=epochs_tensor,
-    tokens_seen=tracking["tokens_seen"],
-    train_losses=tracking["train_losses"],
-    val_losses=tracking["val_losses"],
-    train_loss_label="Train loss",
-    val_loss_label="Validation loss",
-    title="DPO Losses"
-)
-
-utils.plot_gpu_usage(
-    tokens_seen=tracking["tokens_seen"],
-    reserved_gpu_memory=tracking["reserved_gpu_memory"],
-    allocated_gpu_memory=tracking["allocated_gpu_memory"],
-    title="DPO GPU Usage (MB)"
-)
