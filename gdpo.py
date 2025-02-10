@@ -1,5 +1,6 @@
 import pprint
 import time
+import json
 
 import torch
 from torch.utils.data import DataLoader
@@ -92,6 +93,7 @@ print(customized_collate_fn)
 # * Ch3. Loading a Finetuned LLM for DPO Alignment
 print("\n\nCh3. Loading a Finetuned LLM for DPO Alignment")
 model, tokenizer = load_llm(Args.LLM)
+Args.pad_token_id = tokenizer.eos_token_id
 
 print("\n-> Model Test")
 model.eval()
@@ -181,6 +183,13 @@ utils.generate_and_print_sample(
     start_context=format_input(val_data[2]),
 )
 
+# Save the tracking data to a JSON file
+with open('gdpo_tracking.json', 'w') as f:
+    json.dump(tracking, f, indent=4)  # indent for pretty formatting
+
+# Save the model to the Hugging Face Hub
+policy_model.push_to_hub("BIGDaTA-Lab/Llama-3.2-1B-4bit-generalized-dpo")
+
 # * Ch7. Evaluating G-DPO Model
 print("\n\nCh7. Evaluating G-DPO Model")
 print("\t-> Plotting G-DPO Loss:")
@@ -206,7 +215,7 @@ utils.plot_losses(
     val_losses=val_reward_margins,
     train_loss_label="Train reward margin",
     val_loss_label="Validation reward margin",
-    title="Reward Margins"
+    title="G-DPO Reward Margins"
 )
 
 utils.plot_gpu_usage(
