@@ -5,9 +5,8 @@ from torch import Tensor
 
 import utils
 from custom_types import ProcessedBatch
-# import ipdb
 from loss_commons import compute_dpo_loss, compute_logprobs
-import ipdb
+
 
 def get_max_of_rejected_logprobs(model, batch):
     """
