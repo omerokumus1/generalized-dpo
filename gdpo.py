@@ -19,7 +19,7 @@ from training_llm import start_training
 
 
 Args.method="gdpo"
-Args.data_file_path = "gdpo_data_en.json"
+Args.data_file_path = "data/gdpo_data_en.json"
 Args.LLM = LLM.unsloth_llama_3_1b_bnb_4bit
 Args.DEBUG = False
 Args.use_sub_data = False
@@ -38,7 +38,6 @@ Dataset format
     {
         "instruction": "Aşağıda bir soru ve bu soru için doğru olabilecek seçenekler A), B), C) şeklinde verilmiştir. Seçenek formatı <HARF><SAĞ PARANTEZ><AÇIKLAMA> şeklindedir. Verilen soruya göre doğru cevabı seç ve açıkla.",
         "input": "Aşağıdaki cümlelerin hangisinde –de ekinin yazımında bir yanlışlık yapılmıştır?\n\nA) Sokakta kimsecikler yoktu.\nB) Caddede oturanlarda bu durumdan habersizdi.\nC) Okulun bahçesinde birkaç öğrenci kalmıştı.\nD) Sizleri de aramızda görmekten mutluluk duyarız.\n",
-        "output": "Türkçe'de '-de' ekinin ayrı yazılması gerektiği durumlar vardır. 'B' seçeneğinde 'oturanlarda' kelimesi yanlış yazılmıştır; doğru yazımı 'oturanlar da' şeklindedir, çünkü '-de' eki burada ayrı yazılmalıdır.\nDoğru cevap B seçeneğidir.",
         "rejecteds": [
             "A) Sokakta kimsecikler yoktu.",
             "C) Okulun bahçesinde birkaç öğrenci kalmıştı.",
