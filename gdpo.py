@@ -16,7 +16,7 @@ from prepare_dataset import read_data, format_input, get_sub_data, get_train_tes
 from supported_llms import LLM
 from test_util import test_model, test_data_loader
 from training_llm import start_training
-
+from utils import write_to_json
 
 Args.method="gdpo"
 Args.data_file_path = "data/gdpo_data_en.json"
@@ -176,8 +176,7 @@ print("\nCh6. Starting G-DPO training...")
 tracking = start_training(policy_model, reference_model, train_loader, val_loader, method="gdpo")
 
 # Save the tracking data to a JSON file
-with open('gdpo_tracking.json', 'w') as f:
-    json.dump(tracking, f, indent=4)  # indent for pretty formatting
+write_to_json(tracking, "result/gdpo_tracking.json")
 
 # Save the model to the Hugging Face Hub
 policy_model.push_to_hub("BIGDaTA-Lab/Llama-3.2-1B-4bit-generalized-dpo")
