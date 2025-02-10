@@ -6,7 +6,7 @@
 # This file collects all the relevant code that we covered thus far
 # throughout Chapters 2-6.
 # This file can be run as a standalone script.
-
+import json
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
@@ -15,6 +15,7 @@ import tiktoken
 from tiktoken import Encoding
 import torch
 import os
+import re
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 from importlib.metadata import version
@@ -209,7 +210,7 @@ def plot_losses(epochs_seen, tokens_seen, train_losses, val_losses, train_loss_l
     ax2.set_xlabel("Tokens seen")
 
     fig.tight_layout()  # Adjust layout to make room
-    plt.savefig(f"{Args.method.upper()} loss-plot.pdf")
+    plt.savefig(f"fig/{Args.method.upper()} loss-plot.pdf")
     plt.show()
 
 
@@ -231,7 +232,7 @@ def plot_gpu_usage(tokens_seen, reserved_gpu_memory, allocated_gpu_memory, title
     ax2.xaxis.set_major_locator(MaxNLocator(integer=True))  # only show integer labels on x-axis
 
     fig.tight_layout()  # Adjust layout to make room
-    plt.savefig(f"{Args.method.upper()} gpu-usage-plot.pdf")
+    plt.savefig(f"fig/{Args.method.upper()} gpu-usage-plot.pdf")
     plt.show()
 
 
@@ -388,8 +389,53 @@ def print_peak_gpu_usage():
 
     return f'{torch.cuda.max_memory_allocated(0) / 1e6:.2f}', f'{torch.cuda.max_memory_reserved(0) / 1e6:.2f}'
 
+
 def get_model_device(model):
     """
     Returns the device where the model's parameters are located.
     """
     return next(model.parameters()).device
+
+
+def extract_answers(responses):
+    """
+    Extracts the answer
+    """
+    answers = []
+    for i, response in enumerate(responses):
+        answer = extract_answer_letter(response)
+        answers.append(f'{i + 1}) {answer}')
+    return answers
+
+
+def extract_answer_letter(text):
+    """
+    Extracts the first letter after the "Correct Answer:" line and before closing parenthesis ")".
+
+    Args:
+    text: The input string containing the LLM's response.
+
+    Returns:
+    The extracted letter (e.g., "C"), or "X" if not found.
+    """
+    # Find the line containing "Correct Answer:" (case-insensitive)
+    match = re.search(r"correct answer:\s*([A-Z])\)", text, re.IGNORECASE)
+
+    if match:
+        # Extract the letter from the matched group
+        return match.group(1).upper()  # Convert to uppercase for consistency
+    else:
+        # Return "X" if not found
+        return "X"
+
+
+def write_to_txt(content, file_name):
+    with open(file_name, 'w') as f:
+        f.write(content)
+    print(f"Data written to {file_name}")
+
+
+def write_to_json(content, file_name):
+    with open(file_name, 'w') as f:
+        json.dump(content, f, indent=4)  # indent for pretty formatting
+    print(f"Data written to {file_name}")
