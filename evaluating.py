@@ -1,10 +1,12 @@
 import utils
+import json
 from args import Args
 from prepare_dataset import format_input
 from utils import generate, text_to_token_ids, token_ids_to_text
 
 
 def print_model_responses(policy_model, reference_model, data, tokenizer, response_count = 3):
+    final_text = ""
     for entry in data[:response_count]:
 
         input_text = format_input(entry)
@@ -42,6 +44,14 @@ def print_model_responses(policy_model, reference_model, data, tokenizer, respon
         print(f"\nReference model response:\n>> {reference_response_text.strip()}")
         print(f"\nPolicy model response:\n>> {policy_response_text.strip()}")
         print("\n-------------------------------------\n")
+        correct_response = f"\nCorrect response:\n>> {entry['chosen']}"
+        reference_response = f"\nReference model response:\n>> {reference_response_text.strip()}"
+        policy_response = f"\nPolicy model response:\n>> {policy_response_text.strip()}"
+        dashes = "\n-------------------------------------\n"
+        final_text += input_text + correct_response + reference_response + policy_response + dashes
+
+    with open(f'{Args.method.upper()} model_responses.json', 'w') as f:
+        json.dump(final_text, f, indent=4)  # indent for pretty formatting
 
 
 def get_model_response(model, input_text, tokenizer):
