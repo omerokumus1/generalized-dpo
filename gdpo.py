@@ -12,15 +12,17 @@ from gdpo_loss import evaluate_gdpo_loss_loader
 from evaluating import print_model_responses
 from load_llm import load_llm
 from prepare_dataset import read_data, format_input, get_sub_data, get_train_test_validation_data, print_data_lengths
+from supported_llms import LLM
 from test_util import test_model, test_data_loader
 from training_llm import start_training
 
 
-def set_arguments():
-    pass
-
-
-set_arguments()
+Args.method="gdpo"
+Args.data_file_path = "gdpo_data_en.json"
+Args.LLM = LLM.unsloth_llama_3_1b_bnb_4bit
+Args.DEBUG = False
+Args.use_sub_data = False
+Args.is_model_local = False
 
 # * Check Libraries
 print("Check Libraries")
@@ -98,7 +100,6 @@ if Args.DEBUG:
 
 print("\n -> Loading policy_model and reference_model..")
 policy_model = model
-model = None  # Free up memory
 reference_model, _ = load_llm(Args.LLM)
 reference_model.eval()
 
