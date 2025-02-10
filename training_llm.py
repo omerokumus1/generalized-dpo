@@ -30,6 +30,7 @@ def train_model_gdpo(
         "allocated_gpu_memory": [],
         "max_reserved_gpu_memory": '',
         "max_allocated_gpu_memory": '',
+        "execution_time_minutes": '',
     }
     tokens_seen, global_step = 0, -1
 
@@ -113,6 +114,7 @@ def train_model_dpo(
         "allocated_gpu_memory": [],
         "max_reserved_gpu_memory": '',
         "max_allocated_gpu_memory": '',
+        "execution_time_minutes": '',
     }
     tokens_seen, global_step = 0, -1
 
@@ -215,5 +217,6 @@ def start_training(policy_model, reference_model, train_loader, val_loader, meth
     end_time = time.time()
     execution_time_minutes = (end_time - start_time) / 60
     print(f"Training completed in {execution_time_minutes:.2f} minutes.")
+    tracking["execution_time_minutes"] = f'{execution_time_minutes:.2f}'
 
     return tracking
