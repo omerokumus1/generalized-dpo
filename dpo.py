@@ -68,7 +68,7 @@ desired_response = f"### Response:\n{data[50]['chosen']}"
 print(desired_response)
 
 print("\n-> Possible Responses by Entry Test ")
-possible_responses = f"### Response:\n{data[50]['rejecteds']}"
+possible_responses = f"### Response:\n{data[50]['rejected']}"
 print(possible_responses)
 
 # ? 2.2. Creating training, validation, and test splits
