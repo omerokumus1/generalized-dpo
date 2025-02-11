@@ -24,7 +24,7 @@ def get_sub_data(data: List[EntryDict],
 
 
 def format_input(entry: EntryDict | DpoEntryDict) -> str:
-    prompt = Args.gdpo_prompt if Args.method == "gdpo" else Args.dpo_prompt
+    prompt = "Your task is to analyze questions carefully, select the correct choice."
     instruction_text = prompt+ f"\n\n### Instruction:\n{entry['instruction']}"
 
     input_text = f"\n\n### Input:\n{entry['input']}" if entry["input"] else ""
