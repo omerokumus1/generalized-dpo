@@ -20,7 +20,7 @@ from utils import write_to_json
 
 Args.method = "dpo"
 Args.data_file_path = "data/dpo_data_en.json"
-Args.LLM = LLM.unsloth_llama_3_1b_bnb_4bit
+Args.LLM = LLM.unsloth_llama3_1b_instruct
 Args.DEBUG = False
 Args.use_sub_data = False
 Args.is_model_local = False
