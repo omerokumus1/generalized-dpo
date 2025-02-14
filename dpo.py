@@ -6,10 +6,10 @@ import torch
 from torch.utils.data import DataLoader
 
 import utils
-from PreferenceDataset import PreferenceDataset, DpoPreferenceDataset
+from PreferenceDataset import DpoPreferenceDataset
 from args import Args
-from batch_processing import get_gdpo_customized_collate_fn
-from gdpo_loss import evaluate_gdpo_loss_loader
+from dpo_batch_processing import get_dpo_customized_collate_fn
+from dpo_loss import evaluate_dpo_loss_loader
 from evaluating import print_model_responses
 from load_llm import load_llm
 from prepare_dataset import read_data, format_input, get_sub_data, get_train_test_validation_data, print_data_lengths
@@ -81,7 +81,7 @@ print_data_lengths(data, train_data, test_data, val_data)
 # ? 2.3. Developing a PreferenceDataset class and batch processing function
 print("\n\n# 2.3. Developing a PreferenceDataset class and batch processing function")
 print("\tDevice:", Args.device)
-customized_collate_fn = get_gdpo_customized_collate_fn()
+customized_collate_fn = get_dpo_customized_collate_fn()
 print("\tCustomized Collate Function:")
 print(customized_collate_fn)
 
@@ -143,7 +143,7 @@ print("\n\nCh4. Implementing the DPO Loss Function")
 print("\n\nCh5. Initial Responses")
 print("\t-> Initial losses and rewards:")
 start_time = time.time()
-res = evaluate_gdpo_loss_loader(
+res = evaluate_dpo_loss_loader(
     policy_model=policy_model,
     reference_model=reference_model,
     train_loader=train_loader,
