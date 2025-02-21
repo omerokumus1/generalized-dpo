@@ -24,7 +24,8 @@ def get_sub_data(data: List[EntryDict],
 
 
 def format_input(entry: EntryDict | DpoEntryDict) -> str:
-    prompt = "Your task is to analyze questions carefully, select the correct choice."
+    prompt = "Below is an instruction that describes a task. Write a response that appropriately completes the request."
+
     instruction_text = prompt+ f"\n\n### Instruction:\n{entry['instruction']}"
 
     input_text = f"\n\n### Input:\n{entry['input']}" if entry["input"] else ""
