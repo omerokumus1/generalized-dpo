@@ -18,8 +18,8 @@ class Args:
 
     pad_token_id = 128001
 
-    max_seq_length: int = 1024
-    max_context_length: int = 1024
+    max_seq_length: int = 2048
+    max_context_length: int = 2048
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
