@@ -1,5 +1,7 @@
 import time
 import torch
+import math
+
 from torch.xpu import max_memory_reserved
 
 import utils
@@ -65,6 +67,12 @@ def train_model_gdpo(
                         beta=beta,
                         eval_iter=eval_iter
                     )
+                    if math.isnan(res["train_loss"]):
+                        raise ValueError("Train Loss is NaN")
+
+                    if math.isnan(res["val_loss"]):
+                        raise ValueError("Val Loss is NaN")
+
                     tracking["train_losses"].append(res["train_loss"])
                     tracking["train_chosen_rewards"].append(res["train_chosen_reward"])
                     tracking["train_rejected_rewards"].append(res["train_rejected_reward"])
@@ -76,6 +84,14 @@ def train_model_gdpo(
                     tracking["allocated_gpu_memory"].append(f"{torch.cuda.memory_allocated() / 1e6:.2f}")
                     train_reward_margin = res["train_chosen_reward"] - res["train_rejected_reward"]
                     val_reward_margin = res["val_chosen_reward"] - res["val_rejected_reward"]
+
+                    if math.isnan(train_reward_margin):
+                        print("Train Chosen Reward", res["train_chosen_reward"])
+                        raise ValueError(f"Train Reward Margin is NaN. \nTrain Chosen Reward {res['train_chosen_reward']} \nTrain Rejected Reward {res['train_rejected_reward']}")
+
+                    if math.isnan(val_reward_margin):
+                        raise ValueError(f"Val Reward Margin is NaN. \nVal Chosen Reward {res['val_chosen_reward']} \nVal Rejected Reward {res['val_rejected_reward']}")
+
 
                     print()
                     print(
