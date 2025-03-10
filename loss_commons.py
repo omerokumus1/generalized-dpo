@@ -6,12 +6,12 @@ import torch.nn.functional as F
 # This function calculates logarithms, and you need to pass the combined
 # scores of rejected answers.
 def compute_dpo_loss(
-        policy_chosen_logprobs,
-        policy_rejected_logprobs,
-        reference_chosen_logprobs,
-        reference_rejected_logprobs,
+        policy_chosen_logprobs: Tensor,
+        policy_rejected_logprobs: Tensor,
+        reference_chosen_logprobs: Tensor,
+        reference_rejected_logprobs: Tensor,
         beta=0.1,
-):
+) -> [Tensor, Tensor, Tensor]:
     """Compute the DPO loss for a batch of policy and reference model log probabilities.
 
     Args:
@@ -27,16 +27,21 @@ def compute_dpo_loss(
     """
 
     model_logratios = policy_chosen_logprobs - policy_rejected_logprobs
+    model_logratios = torch.clamp(model_logratios, -1e6, 1e6)
+
     reference_logratios = reference_chosen_logprobs - reference_rejected_logprobs
+    reference_logratios = torch.clamp(reference_logratios, -1e6, 1e6)
+
     logits = model_logratios - reference_logratios
+    logits = torch.clamp(logits, -1e6, 1e6)
 
     # DPO (Eq. 7 of https://arxiv.org/pdf/2305.18290.pdf)
     # reference_model's logits can contain inf values
     losses = -F.logsigmoid(beta * logits)
 
     # Optional values to track progress during training
-    chosen_rewards = (policy_chosen_logprobs - reference_chosen_logprobs).detach()
-    rejected_rewards = (policy_rejected_logprobs - reference_rejected_logprobs).detach()
+    chosen_rewards: Tensor = (policy_chosen_logprobs - reference_chosen_logprobs).detach()
+    rejected_rewards: Tensor = (policy_rejected_logprobs - reference_rejected_logprobs).detach()
 
     # .mean() to average over the samples in the batch
     return losses.mean(), chosen_rewards.mean(), rejected_rewards.mean()
