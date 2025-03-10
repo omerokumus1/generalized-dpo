@@ -40,7 +40,6 @@ def train_model_gdpo(
     try:
         for epoch in range(num_epochs):
             policy_model.train()  # Set model to training mode
-            loss = None
             for batch_idx, batch in enumerate(train_loader):
                 batch: ProcessedBatch = batch
                 optimizer.zero_grad()  # Reset loss gradients from previous batch iteration
@@ -67,10 +66,13 @@ def train_model_gdpo(
                         beta=beta,
                         eval_iter=eval_iter
                     )
+
                     if math.isnan(res["train_loss"]):
+                        print("res: ", res)
                         raise ValueError("Train Loss is NaN")
 
                     if math.isnan(res["val_loss"]):
+                        print("res: ", res)
                         raise ValueError("Val Loss is NaN")
 
                     tracking["train_losses"].append(res["train_loss"])
@@ -86,10 +88,11 @@ def train_model_gdpo(
                     val_reward_margin = res["val_chosen_reward"] - res["val_rejected_reward"]
 
                     if math.isnan(train_reward_margin):
-                        print("Train Chosen Reward", res["train_chosen_reward"])
+                        print("res", res)
                         raise ValueError(f"Train Reward Margin is NaN. \nTrain Chosen Reward {res['train_chosen_reward']} \nTrain Rejected Reward {res['train_rejected_reward']}")
 
                     if math.isnan(val_reward_margin):
+                        print("res", res)
                         raise ValueError(f"Val Reward Margin is NaN. \nVal Chosen Reward {res['val_chosen_reward']} \nVal Rejected Reward {res['val_rejected_reward']}")
 
 
