@@ -173,7 +173,7 @@ torch.cuda.empty_cache()
 # * Ch6. G-DPO training
 print("\nCh6. G-DPO training")
 print("\nCh6. Starting G-DPO training...")
-tracking = start_training(policy_model, reference_model, train_loader, val_loader, method="gdpo")
+tracking = start_training(policy_model, reference_model, train_loader, val_loader, tokenizer, method="gdpo")
 
 # Save the tracking data to a JSON file
 write_to_json(tracking, "result/gdpo_tracking.json")

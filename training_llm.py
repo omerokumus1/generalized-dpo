@@ -13,11 +13,13 @@ from prepare_dataset import format_input
 from torch.optim import Optimizer
 import traceback
 
+from utils import decode_tokens_from_batch
+
 
 def train_model_gdpo(
         policy_model, reference_model, train_loader, val_loader,
         optimizer: Optimizer, num_epochs, beta,
-        eval_freq, eval_iter
+        eval_freq, eval_iter, tokenizer
 ):
     # Initialize lists to track losses and tokens seen
     tracking = {
@@ -67,13 +69,15 @@ def train_model_gdpo(
                         eval_iter=eval_iter
                     )
 
+                    is_nan = False
+                    error_message = ""
                     if math.isnan(res["train_loss"]):
-                        print("res: ", res)
-                        raise ValueError("Train Loss is NaN")
+                        is_nan = True
+                        error_message = "Train Loss is NaN"
 
                     if math.isnan(res["val_loss"]):
-                        print("res: ", res)
-                        raise ValueError("Val Loss is NaN")
+                        is_nan = True
+                        error_message = "Val Loss is NaN"
 
                     tracking["train_losses"].append(res["train_loss"])
                     tracking["train_chosen_rewards"].append(res["train_chosen_reward"])
@@ -88,12 +92,21 @@ def train_model_gdpo(
                     val_reward_margin = res["val_chosen_reward"] - res["val_rejected_reward"]
 
                     if math.isnan(train_reward_margin):
-                        print("res", res)
-                        raise ValueError(f"Train Reward Margin is NaN. \nTrain Chosen Reward {res['train_chosen_reward']} \nTrain Rejected Reward {res['train_rejected_reward']}")
+                        is_nan = True
+                        error_message = f"Train Reward Margin is NaN. \nTrain Chosen Reward {res['train_chosen_reward']} \nTrain Rejected Reward {res['train_rejected_reward']}"
 
                     if math.isnan(val_reward_margin):
-                        print("res", res)
-                        raise ValueError(f"Val Reward Margin is NaN. \nVal Chosen Reward {res['val_chosen_reward']} \nVal Rejected Reward {res['val_rejected_reward']}")
+                        is_nan = True
+                        error_message = f"Val Reward Margin is NaN. \nVal Chosen Reward {res['val_chosen_reward']} \nVal Rejected Reward {res['val_rejected_reward']}"
+
+                    if is_nan:
+                        print("batch id:", batch_idx)
+                        print("prompt:", decode_tokens_from_batch(batch['prompt'], tokenizer))
+                        print("loss:", loss)
+                        print("chosen rewards:", chosen_rewards)
+                        print("rejected rewards:", rejected_rewards)
+                        print("res:", res)
+                        raise ValueError(error_message)
 
 
                     print()
@@ -199,7 +212,7 @@ def train_model_dpo(
     return tracking
 
 
-def start_training(policy_model, reference_model, train_loader, val_loader, method="gdpo"):
+def start_training(policy_model, reference_model, train_loader, val_loader, tokenizer, method="gdpo"):
     start_time = time.time()
 
     torch.manual_seed(Args.torch_seed)
@@ -217,7 +230,8 @@ def start_training(policy_model, reference_model, train_loader, val_loader, meth
                 num_epochs=Args.num_epochs,
                 beta=0.1,  # value between 0.1 and 0.5
                 eval_freq=5,
-                eval_iter=5
+                eval_iter=5,
+                tokenizer=tokenizer
             )
 
         elif method == "dpo":
