@@ -1,18 +1,15 @@
-import time
-import torch
 import math
+import time
+import traceback
 
-from torch.xpu import max_memory_reserved
+import torch
+from torch.optim import Optimizer
 
 import utils
 from args import Args
 from custom_types import ProcessedBatch, DpoProcessedBatch
-from gdpo_loss import compute_gdpo_loss_batch, evaluate_gdpo_loss_loader, dummy_loss_function
 from dpo_loss import compute_dpo_loss_batch, evaluate_dpo_loss_loader
-from prepare_dataset import format_input
-from torch.optim import Optimizer
-import traceback
-
+from gdpo_loss import compute_gdpo_loss_batch, evaluate_gdpo_loss_loader
 from utils import decode_tokens_from_batch
 
 
@@ -101,7 +98,8 @@ def train_model_gdpo(
 
                     if is_nan:
                         print("batch id:", batch_idx)
-                        print("prompt:", decode_tokens_from_batch(batch['prompt'], tokenizer))
+                        for i,p in enumerate(batch['prompt']):
+                            print(f"{i+1}. prompt:", decode_tokens_from_batch(p, tokenizer))
                         print("loss:", loss)
                         print("chosen rewards:", chosen_rewards)
                         print("rejected rewards:", rejected_rewards)
