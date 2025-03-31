@@ -1,6 +1,6 @@
 import json
 import pprint
-from typing import Tuple, List
+from typing import List
 
 from args import Args
 from custom_types import EntryDict, DpoEntryDict

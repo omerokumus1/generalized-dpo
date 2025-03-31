@@ -1,16 +1,15 @@
 import pprint
 import time
-import json
 
 import torch
 from torch.utils.data import DataLoader
 
 import utils
-from PreferenceDataset import PreferenceDataset
+from PreferenceDataset import GdpoPreferenceDataset
 from args import Args
-from batch_processing import get_gdpo_customized_collate_fn
-from gdpo_loss import evaluate_gdpo_loss_loader
 from evaluating import print_model_responses
+from gdpo_batch_processing import get_gdpo_customized_collate_fn
+from gdpo_loss import evaluate_gdpo_loss_loader
 from load_llm import load_llm
 from prepare_dataset import read_data, format_input, get_sub_data, get_train_test_validation_data, print_data_lengths
 from supported_llms import LLM
@@ -107,7 +106,7 @@ reference_model.eval()
 # ? 2.4. Creating training, validation, and test set data loaders
 print("\n\n# 2.4. Creating training, validation, and test set data loaders")
 torch.manual_seed(Args.torch_seed)
-train_dataset = PreferenceDataset(train_data, tokenizer, format_input)
+train_dataset = GdpoPreferenceDataset(train_data, tokenizer, format_input)
 train_loader = DataLoader(
     train_dataset,
     batch_size=Args.batch_size,
@@ -117,7 +116,7 @@ train_loader = DataLoader(
     num_workers=Args.num_workers
 )
 
-val_dataset = PreferenceDataset(val_data, tokenizer, format_input)
+val_dataset = GdpoPreferenceDataset(val_data, tokenizer, format_input)
 val_loader = DataLoader(
     val_dataset,
     batch_size=Args.batch_size,
@@ -127,7 +126,7 @@ val_loader = DataLoader(
     num_workers=Args.num_workers
 )
 
-test_dataset = PreferenceDataset(test_data, tokenizer, format_input)
+test_dataset = GdpoPreferenceDataset(test_data, tokenizer, format_input)
 test_loader = DataLoader(
     test_dataset,
     batch_size=Args.batch_size,

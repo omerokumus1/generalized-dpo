@@ -8,7 +8,7 @@ from tiktoken import Encoding
 from torch import Tensor
 from torch.utils.data import DataLoader
 
-from PreferenceDataset import PreferenceDataset
+from PreferenceDataset import GdpoPreferenceDataset
 from args import Args
 from custom_types import BatchEntry, ProcessedBatch, EntryDict
 
@@ -176,7 +176,7 @@ def test_gdpo_customized_collate_fn(collate_fn: partial, data: List[EntryDict], 
         print()
         pprint.pp(i)
 
-    example_dataset = PreferenceDataset(example_data, tokenizer, format_input)
+    example_dataset = GdpoPreferenceDataset(example_data, tokenizer, format_input)
 
     example_dataloader = DataLoader(
         example_dataset,

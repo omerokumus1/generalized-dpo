@@ -4,11 +4,11 @@
 # Code: https://github.com/rasbt/LLMs-from-scratch
 
 
+# import requests
+import json
 import os
 import urllib.request
 
-# import requests
-import json
 import numpy as np
 import tensorflow as tf
 from tqdm import tqdm

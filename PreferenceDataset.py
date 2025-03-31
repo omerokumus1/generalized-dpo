@@ -6,7 +6,7 @@ from torch.utils.data import Dataset
 from custom_types import EntryDict, DpoEntryDict
 
 
-class PreferenceDataset(Dataset):
+class GdpoPreferenceDataset(Dataset):
     def __init__(self, data: List[EntryDict], tokenizer, format_input: Callable[[EntryDict], str]):
         """
         data is the dataset we provided with instruction, input, output, rejecteds, chosen keys
@@ -58,6 +58,7 @@ class DpoPreferenceDataset(Dataset):
             prompt = format_input(entry)
             rejected_response = entry["rejected"]
             chosen_response = entry["chosen"]
+
             prompt_tokens = tokenizer.encode(prompt)
             chosen_full_text = f"{prompt}\n\n### Response:\n{chosen_response}"
             chosen_full_tokens = tokenizer.encode(chosen_full_text)

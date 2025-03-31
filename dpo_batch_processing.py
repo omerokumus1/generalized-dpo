@@ -8,7 +8,7 @@ from tiktoken import Encoding
 from torch import Tensor
 from torch.utils.data import DataLoader
 
-from PreferenceDataset import PreferenceDataset, DpoPreferenceDataset
+from PreferenceDataset import DpoPreferenceDataset
 from args import Args
 from custom_types import DpoBatchEntry, DpoEntryDict, DpoProcessedBatch
 

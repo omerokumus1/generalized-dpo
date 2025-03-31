@@ -7,18 +7,15 @@
 # throughout Chapters 2-6.
 # This file can be run as a standalone script.
 import json
+import re
+from importlib.metadata import version
 
 import matplotlib.pyplot as plt
-from matplotlib.ticker import MaxNLocator
 import numpy as np
 import tiktoken
-from tiktoken import Encoding
 import torch
-import os
-import re
-import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader
-from importlib.metadata import version
+from matplotlib.ticker import MaxNLocator
+from tiktoken import Encoding
 
 from args import Args
 from custom_types import ProcessedBatch
@@ -152,14 +149,14 @@ def text_to_token_ids(text, tokenizer):
     return encoded_tensor
 
 
-def token_ids_to_text(token_ids, tokenizer):
+def token_ids_to_text(token_ids, tokenizer, skip_special_tokens=False):
     flat = token_ids.squeeze(0)  # remove batch dimension
-    return tokenizer.decode(flat.tolist(), skip_special_tokens=True)
+    return tokenizer.decode(flat.tolist(), skip_special_tokens=skip_special_tokens)
 
 
-def decode_tokens_from_batch(token_ids, tokenizer) -> str:
+def decode_tokens_from_batch(token_ids, tokenizer, skip_special_tokens=False) -> str:
     ids_in_python_list = token_ids.flatten().tolist()
-    return tokenizer.decode(ids_in_python_list, skip_special_tokens=True)
+    return tokenizer.decode(ids_in_python_list, skip_special_tokens=skip_special_tokens)
 
 
 def extract_response(response_text: str, input_text: str) -> str:

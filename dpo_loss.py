@@ -1,6 +1,6 @@
 import torch
 
-from custom_types import ProcessedBatch, DpoProcessedBatch
+from custom_types import DpoProcessedBatch
 from loss_commons import compute_dpo_loss, compute_logprobs
 
 

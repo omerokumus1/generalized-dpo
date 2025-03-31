@@ -1,10 +1,10 @@
+from unsloth import FastLanguageModel
+
 import utils
-import json
 from args import Args
 from prepare_dataset import format_input
-from utils import generate, text_to_token_ids, token_ids_to_text, write_to_txt, write_to_json
-from unsloth import FastLanguageModel
-import re
+from utils import generate, text_to_token_ids, token_ids_to_text, write_to_json
+
 
 def print_model_responses(policy_model, reference_model, data, tokenizer, response_count = 3):
     responses = []

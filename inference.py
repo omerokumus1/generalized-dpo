@@ -1,6 +1,6 @@
-from unsloth import FastLanguageModel
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
-import torch
+from unsloth import FastLanguageModel
+
 from args import Args
 from evaluating import get_model_responses
 from load_llm import load_llm

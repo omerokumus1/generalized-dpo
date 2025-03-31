@@ -1,6 +1,5 @@
 from typing import TypedDict, List
 
-import torch
 from torch import Tensor
 
 
