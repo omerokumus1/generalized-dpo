@@ -48,8 +48,9 @@ def process_padding_for_chosen(batch_entry: DpoBatchEntry, prompt: Tensor, pad_t
 
     # Set mask for all input tokens to False
     # +2 sets the 2 newline ("\n") tokens before "### Response" to False
+    # +1 sets the first begin-text token to False
     if mask_prompt_tokens:
-        mask[:prompt.shape[0] + 2] = False
+        mask[:1 + prompt.shape[0] + 2] = False
 
     processed_batch[key].append(torch.tensor(padded))
     processed_batch["chosen_mask"].append(mask)
@@ -71,8 +72,9 @@ def process_padding_for_rejected(batch_entry: DpoBatchEntry, prompt: Tensor, pad
 
     # Set mask for all input tokens to False
     # +2 sets the 2 newline ("\n") tokens before "### Response" to False
+    # +1 sets the first begin-text token to False
     if mask_prompt_tokens:
-        mask[:prompt.shape[0] + 2] = False
+        mask[:1 + prompt.shape[0] + 2] = False
 
     processed_batch[key].append(torch.tensor(padded))
     processed_batch["rejected_mask"].append(mask)
