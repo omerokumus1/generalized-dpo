@@ -215,7 +215,7 @@ def start_training(policy_model, reference_model, train_loader, val_loader, toke
 
     torch.manual_seed(Args.torch_seed)
 
-    optimizer = torch.optim.AdamW(policy_model.parameters(), lr=5e-6, weight_decay=0.01)
+    optimizer = torch.optim.AdamW(policy_model.parameters(), lr=2e-4, weight_decay=0.01)
 
     with torch.amp.autocast('cuda', dtype=torch.bfloat16):
         if method == "gdpo":
