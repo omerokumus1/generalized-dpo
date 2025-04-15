@@ -10,6 +10,7 @@ from args import Args
 from custom_types import ProcessedBatch, DpoProcessedBatch
 from dpo_loss import compute_dpo_loss_batch, evaluate_dpo_loss_loader
 from gdpo_loss import compute_gdpo_loss_batch, evaluate_gdpo_loss_loader
+from test_util import check_gradient_flow
 from utils import decode_tokens_from_batch
 
 
@@ -164,6 +165,7 @@ def train_model_dpo(
                     beta=beta
                 )
                 loss.backward()  # Calculate loss gradients
+                # check_gradient_flow(policy_model)
                 optimizer.step()  # Update model weights using loss gradients
 
                 tokens_seen += batch["chosen"].numel()
