@@ -1,16 +1,24 @@
 import torch
-from torch import Tensor
 import torch.nn.functional as F
+from torch import Tensor
+
+from test_util import print_raw_loss_values, print_reward_margins, print_log_prob_range, compare_with_cross_entropy_loss
 
 
-# This function calculates logarithms, and you need to pass the combined
-# scores of rejected answers.
+# Stable smoothed logsigmoid loss
+# def smooth_loss(logits, beta, smoothing=0.1):
+#     """Compute smoothed logsigmoid loss to prevent overconfidence."""
+#     loss = -torch.log1p(torch.exp(-beta * logits))
+#     return (1 - smoothing) * loss + smoothing * (-torch.log1p(torch.exp(beta * logits)))
+
+
 def compute_dpo_loss(
         policy_chosen_logprobs: Tensor,
         policy_rejected_logprobs: Tensor,
         reference_chosen_logprobs: Tensor,
         reference_rejected_logprobs: Tensor,
         beta=0.1,
+        smoothing=0.1  # Label smoothing for stability
 ) -> [Tensor, Tensor, Tensor]:
     """Compute the DPO loss for a batch of policy and reference model log probabilities.
 
@@ -19,31 +27,34 @@ def compute_dpo_loss(
         policy_rejected_logprobs: Log probabilities of the policy model for the rejected responses. Shape: (batch_size,)
         reference_chosen_logprobs: Log probabilities of the reference model for the chosen responses. Shape: (batch_size,)
         reference_rejected_logprobs: Log probabilities of the reference model for the rejected responses. Shape: (batch_size,)
-        beta: Temperature parameter for the DPO loss; typically something in the range of 0.1 to 0.5. We ignore the reference model as beta -> 0.
-        label_smoothing: conservativeness for DPO loss.
+        beta: Temperature parameter for the DPO loss; typically in range (0.1 to 0.5). Lower values make it more conservative.
+        smoothing: Label smoothing factor (default = 0.1).
 
     Returns:
         A tuple of three tensors: (loss, chosen_rewards, rejected_rewards).
     """
+    clamp_max,clamp_min = 1e6, -1e6
 
-    model_logratios = policy_chosen_logprobs - policy_rejected_logprobs
-    model_logratios = torch.clamp(model_logratios, -1e6, 1e6)
+    # Compute log-ratios
+    policy_logratios = policy_chosen_logprobs - policy_rejected_logprobs
+    policy_logratios = torch.clamp(policy_logratios, clamp_min, clamp_max)
 
     reference_logratios = reference_chosen_logprobs - reference_rejected_logprobs
-    reference_logratios = torch.clamp(reference_logratios, -1e6, 1e6)
+    reference_logratios = torch.clamp(reference_logratios, clamp_min, clamp_max)
 
-    logits = model_logratios - reference_logratios
-    logits = torch.clamp(logits, -1e6, 1e6)
+    logits = policy_logratios - reference_logratios
+    logits = torch.clamp(logits, clamp_min, clamp_max)
 
     # DPO (Eq. 7 of https://arxiv.org/pdf/2305.18290.pdf)
-    # reference_model's logits can contain inf values
     losses = -F.logsigmoid(beta * logits)
+    # print_raw_loss_values(losses)
 
-    # Optional values to track progress during training
+    # Detach rewards for monitoring
     chosen_rewards: Tensor = (policy_chosen_logprobs - reference_chosen_logprobs).detach()
     rejected_rewards: Tensor = (policy_rejected_logprobs - reference_rejected_logprobs).detach()
 
-    # .mean() to average over the samples in the batch
+    # print_reward_margins(chosen_rewards, rejected_rewards)
+
     return losses.mean(), chosen_rewards.mean(), rejected_rewards.mean()
 
 
@@ -63,9 +74,19 @@ def compute_logprobs(logits: Tensor, labels: Tensor, selection_mask: Tensor = No
     # Labels are the inputs shifted by one
     labels = labels[:, 1:].clone()
 
+    # Normalize logits for numerical stability
+    # This normalization step ensures that the largest value in the
+    # logits tensor is 0, reducing the risk of overflow or underflow.
+    logits = logits - logits.max(dim=-1, keepdim=True).values
     # Truncate logits to match the labels num_tokens
     logits = logits[:, :-1, :]
+
+    # Normally, Logit values can be negative, positive, or zero. Softmax will distribute them over [0, 1]
+    # (However, normalization above ensures that the largest value is 0)
+    # and summing them results in 1
+    # log_probs values are negative (over (-inf, 0]) since log function
     log_probs = F.log_softmax(logits, dim=-1)
+    print_log_prob_range(log_probs)
 
     # Gather the log probabilities for the actual labels
     # Here, torch.gather calculates the cross entropy
@@ -84,7 +105,17 @@ def compute_logprobs(logits: Tensor, labels: Tensor, selection_mask: Tensor = No
 
         # Calculate the average log probability excluding padding tokens
         # This averages over the tokens, so the shape is (batch_size, num_tokens)
-        avg_log_prob = selected_log_probs.sum(-1) / mask.sum(-1)
+        # Compute valid tokens count
+        valid_tokens = mask.sum(-1)
+
+        # Avoid division by zero
+        # avg_log_prob = torch.where(
+        #     valid_tokens > 0,
+        #     selected_log_probs.sum(-1) / valid_tokens,
+        #     torch.tensor(0.0, device=logits.device)
+        # )
+        valid_tokens = valid_tokens.clamp(min=1)  # Avoid division by 0
+        avg_log_prob = selected_log_probs.sum(-1) / valid_tokens
 
         return avg_log_prob
 
