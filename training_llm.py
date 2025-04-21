@@ -99,14 +99,13 @@ def train_model_gdpo(
 
                     if is_nan:
                         print("batch id:", batch_idx)
-                        for i,p in enumerate(batch['prompt']):
-                            print(f"{i+1}. prompt:", decode_tokens_from_batch(p, tokenizer))
+                        for i, p in enumerate(batch['prompt']):
+                            print(f"{i + 1}. prompt:", decode_tokens_from_batch(p, tokenizer))
                         print("loss:", loss)
                         print("chosen rewards:", chosen_rewards)
                         print("rejected rewards:", rejected_rewards)
                         print("res:", res)
                         raise ValueError(error_message)
-
 
                     print()
                     print(
@@ -155,7 +154,14 @@ def train_model_dpo(
             policy_model.train()  # Set model to training mode
             loss = None
             for batch_idx, batch in enumerate(train_loader):
-                batch: DpoProcessedBatch = batch
+                # batch: DpoProcessedBatch = batch
+                # TODO check batch type, size and keys
+                chosen_mask = batch['chosen_mask'][:, 1:]
+                rejected_mask = batch['rejected_mask'][:, 1:]
+                if chosen_mask.sum(-1) == 0 or rejected_mask.sum(-1) == 0:
+                    print(f"Batch-{batch_idx} contains no valid tokens. Thus skipping this batch.")
+                    continue
+
                 optimizer.zero_grad()  # Reset loss gradients from previous batch iteration
 
                 loss, chosen_rewards, rejected_rewards = compute_dpo_loss_batch(
@@ -167,6 +173,8 @@ def train_model_dpo(
                 loss.backward()  # Calculate loss gradients
                 # check_gradient_flow(policy_model)
                 optimizer.step()  # Update model weights using loss gradients
+                # Prevent numerical instability
+                # torch.nn.utils.clip_grad_norm_(policy_model.parameters(), max_norm=1.0)
 
                 tokens_seen += batch["chosen"].numel()
                 global_step += 1
