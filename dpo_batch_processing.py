@@ -26,7 +26,7 @@ def get_max_length_common(batch: List[DpoBatchEntry]) -> int:
     if batch:
         rejected_max = get_max_rejected_length(batch)
         chosen_max = get_max_chosen_length(batch)
-        max_length_common = max(rejected_max, chosen_max, max_length_common)
+        max_length_common = max(rejected_max, chosen_max)
 
     return max_length_common
 
@@ -46,11 +46,14 @@ def process_padding_for_chosen(batch_entry: DpoBatchEntry, prompt: Tensor, pad_t
     # Set mask for all padding tokens to False
     mask[len(chosen):] = False
 
+    # Set the first begin-text token to False
+    mask[0] = False
+
     # Set mask for all input tokens to False
     # +2 sets the 2 newline ("\n") tokens before "### Response" to False
-    # +1 sets the first begin-text token to False
+    #? +1 sets the newline ("\n") token after "### Response" to False
     if mask_prompt_tokens:
-        mask[:1 + prompt.shape[0] + 2] = False
+        mask[:2 + prompt.shape[0]] = False
 
     processed_batch[key].append(torch.tensor(padded))
     processed_batch["chosen_mask"].append(mask)
@@ -70,11 +73,14 @@ def process_padding_for_rejected(batch_entry: DpoBatchEntry, prompt: Tensor, pad
     # Set mask for all padding tokens to False
     mask[len(rejected):] = False
 
+    # Set the first begin-text token to False
+    mask[0] = False
+
     # Set mask for all input tokens to False
     # +2 sets the 2 newline ("\n") tokens before "### Response" to False
-    # +1 sets the first begin-text token to False
+    #? +1 sets the newline ("\n") token after "### Response" to False
     if mask_prompt_tokens:
-        mask[:1 + prompt.shape[0] + 2] = False
+        mask[:2 + prompt.shape[0]] = False
 
     processed_batch[key].append(torch.tensor(padded))
     processed_batch["rejected_mask"].append(mask)
@@ -149,7 +155,7 @@ def dpo_custom_collate_fn(
 def get_dpo_customized_collate_fn() -> partial:
     customized_collate_fn = partial(
         dpo_custom_collate_fn,
-        mask_prompt_tokens=Args.mask_prompt_tokens,  # This is optional
+        mask_prompt_tokens=Args.mask_prompt_tokens,  # This is optional but should be True
         allowed_max_length=Args.max_context_length  # The supported context length of the model
     )
     return customized_collate_fn
