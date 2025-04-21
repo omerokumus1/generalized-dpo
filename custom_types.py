@@ -15,7 +15,7 @@ class DpoEntryDict(TypedDict):
     chosen: str
     rejected: str
 
-
+# TODO should I use Tensor instead of List?
 class ProcessedBatch(TypedDict):
     prompt: List[Tensor]  # List of tensor
     chosen: List[Tensor]  # Finally becomes Tensor with shape (batch_size, max_length)
@@ -27,7 +27,7 @@ class DpoProcessedBatch(TypedDict):
     prompt: List[Tensor]
     chosen: List[Tensor]
     rejected: List[Tensor]
-    rejected_mask: List[Tensor]  # Finally becomes Tensor with shape (batch_size, num_rejecteds, max_length)
+    rejected_mask: List[Tensor]  # Finally becomes Tensor with shape (batch_size, max_length)
     chosen_mask: List[Tensor]  # Finally becomes Tensor with shape (batch_size, max_length)
 
 
